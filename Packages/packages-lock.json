@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.revenantx.litenetlib": {
+      "version": "https://github.com/RevenantX/LiteNetLib.git?path=LiteNetLib#upm",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "3bfa89948f6fa4e00c421f75cbd999e048f493d8"
+    },
     "com.unity.ai.navigation": {
       "version": "2.0.12",
       "depth": 0,
