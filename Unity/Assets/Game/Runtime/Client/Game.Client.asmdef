@@ -1,0 +1,21 @@
+{
+    "name": "Game.Client",
+    "rootNamespace": "Game.Client",
+    "references": [
+        "GUID:fc7bbf951eeea4a12916de6adc5427da",
+        "GUID:69f70c24dedc41f49aaf4befce6fc0b8",
+        "GUID:63f76626f371948b4b013a68755d7032",
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:caca889fed6088d40b22c2d7e2909c31",
+        "GUID:c56318fea9342411a90e247518babda4"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,16 @@
+{
+    "name": "Game.Utils",
+    "rootNamespace": "Game.Utils",
+    "references": [
+        "FFS.StaticEcs"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
