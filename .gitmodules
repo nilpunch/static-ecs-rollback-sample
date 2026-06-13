@@ -1,18 +1,18 @@
 [submodule "Assets/Plugins/StaticEcs"]
-	path = Assets/Plugins/StaticEcs
+	path = Unity/Assets/Plugins/StaticEcs
 	url = https://github.com/Felid-Force-Studios/StaticEcs.git
 [submodule "Assets/Plugins/StaticPack"]
-	path = Assets/Plugins/StaticPack
+	path = Unity/Assets/Plugins/StaticPack
 	url = https://github.com/Felid-Force-Studios/StaticPack.git
 [submodule "Assets/Plugins/static-rollback"]
-	path = Assets/Plugins/static-rollback
+	path = Unity/Assets/Plugins/static-rollback
 	url = https://github.com/nilpunch/static-rollback.git
 [submodule "Assets/Plugins/static-rollback-litenetlib"]
-	path = Assets/Plugins/static-rollback-litenetlib
+	path = Unity/Assets/Plugins/static-rollback-litenetlib
 	url = https://github.com/nilpunch/static-rollback-litenetlib.git
 [submodule "Assets/Plugins/StaticEcs-Unity"]
-	path = Assets/Plugins/StaticEcs-Unity
+	path = Unity/Assets/Plugins/StaticEcs-Unity
 	url = https://github.com/Felid-Force-Studios/StaticEcs-Unity.git
 [submodule "Assets/Plugins/StaticEcs-Analyzer"]
-	path = Assets/Plugins/StaticEcs-Analyzer
+	path = Unity/Assets/Plugins/StaticEcs-Analyzer
 	url = https://github.com/Felid-Force-Studios/StaticEcs-Analyzer.git
