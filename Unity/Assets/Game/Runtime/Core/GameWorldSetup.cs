@@ -1,5 +1,4 @@
-namespace Game.Core
-{
+namespace Game.Core {
 	public static class GameWorldSetup {
 		public static void Create() {
 			W.Create();

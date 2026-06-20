@@ -3,7 +3,8 @@
     "rootNamespace": "Game.Core",
     "references": [
         "FFS.StaticEcs",
-        "Shenanicode.Rollback"
+        "Shenanicode.Rollback",
+        "FFS.StaticPack"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
