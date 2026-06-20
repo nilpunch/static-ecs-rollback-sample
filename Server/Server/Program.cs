@@ -48,6 +48,9 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	Console.WriteLine("Hello, Static World!");
 	Console.WriteLine($"Port: {parseResult.GetValue(portOption)}");
+	if (parseResult.GetValue(fileOption) is { } parsedFile) {
+		Console.WriteLine($"WorldFile: {parsedFile.Name}");
+	}
 
 	clientListener.Start();
 
