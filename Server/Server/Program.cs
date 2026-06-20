@@ -20,12 +20,11 @@ Option<FileInfo> fileOption = new("--file")
 RootCommand rootCommand = new("Game server.");
 rootCommand.Options.Add(fileOption);
 rootCommand.Options.Add(portOption);
-
 rootCommand.SetAction(RunProgram);
 
-return rootCommand.Parse(args).Invoke();
+return await rootCommand.Parse(args).InvokeAsync();
 
-async Task RunProgram(ParseResult parseResult, CancellationToken arg2) {
+async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 	var running = true;
 	Console.CancelKeyPress += (_, e) =>
 	{
@@ -47,7 +46,8 @@ async Task RunProgram(ParseResult parseResult, CancellationToken arg2) {
 	GameWorldSetup.Register();
 	GameWorldSetup.Initialize();
 
-	Console.WriteLine($"Hello, Static World!");
+	Console.WriteLine("Hello, Static World!");
+	Console.WriteLine($"Port: {parseResult.GetValue(portOption)}");
 
 	clientListener.Start();
 
@@ -63,6 +63,8 @@ async Task RunProgram(ParseResult parseResult, CancellationToken arg2) {
 	Server.Destroy();
 
 	Console.WriteLine($"Exit with {stopwatch.Elapsed.TotalSeconds} seconds");
+
+	return 0;
 }
 
 public abstract class Server : Server<GameWorld>;
