@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>library</OutputType>
+		<LangVersion>9</LangVersion>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Nullable>disable</Nullable>
+		<RootNamespace>Game.Core</RootNamespace>
+		<Version>0.1.0</Version>
+		<IncludeSymbols>true</IncludeSymbols>
+		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\Plugins\StaticEcs\StaticEcs.csproj" />
+		<ProjectReference Include="..\..\..\Plugins\static-rollback\Runtime\Shenanicode.Rollback.csproj" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Debug'">
+		<PackageReference Include="FFS.StaticPack.Debug" Version="1.2.6" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Configuration)' == 'Release'">
+		<PackageReference Include="FFS.StaticPack" Version="1.2.6" />
+	</ItemGroup>
+</Project>
