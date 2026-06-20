@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csproj", "{F109A7BC-BC66-4449-9A95-568F6A9A9815}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StaticEcs", "..\Unity\Assets\Plugins\StaticEcs\StaticEcs.csproj", "{020248A8-A26E-497B-B55E-D9E840404F62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game.Core", "..\Unity\Assets\Game\Runtime\Core\Game.Core.csproj", "{DF142A1D-9F87-450A-8A8C-A204DC8612A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shenanicode.Rollback", "..\Unity\Assets\Plugins\static-rollback\Runtime\Shenanicode.Rollback.csproj", "{9F784721-2FF1-4D94-9057-41D0FE9E5990}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shenanicode.Rollback.LiteNetLib", "..\Unity\Assets\Plugins\static-rollback-litenetlib\Runtime\Shenanicode.Rollback.LiteNetLib.csproj", "{D19237DB-5198-4327-82DA-EB7B39B2574C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F109A7BC-BC66-4449-9A95-568F6A9A9815}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F109A7BC-BC66-4449-9A95-568F6A9A9815}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F109A7BC-BC66-4449-9A95-568F6A9A9815}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F109A7BC-BC66-4449-9A95-568F6A9A9815}.Release|Any CPU.Build.0 = Release|Any CPU
+		{020248A8-A26E-497B-B55E-D9E840404F62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{020248A8-A26E-497B-B55E-D9E840404F62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{020248A8-A26E-497B-B55E-D9E840404F62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{020248A8-A26E-497B-B55E-D9E840404F62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF142A1D-9F87-450A-8A8C-A204DC8612A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF142A1D-9F87-450A-8A8C-A204DC8612A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF142A1D-9F87-450A-8A8C-A204DC8612A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF142A1D-9F87-450A-8A8C-A204DC8612A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F784721-2FF1-4D94-9057-41D0FE9E5990}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F784721-2FF1-4D94-9057-41D0FE9E5990}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F784721-2FF1-4D94-9057-41D0FE9E5990}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F784721-2FF1-4D94-9057-41D0FE9E5990}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D19237DB-5198-4327-82DA-EB7B39B2574C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D19237DB-5198-4327-82DA-EB7B39B2574C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D19237DB-5198-4327-82DA-EB7B39B2574C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D19237DB-5198-4327-82DA-EB7B39B2574C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
