@@ -5,8 +5,8 @@ namespace Game.Core {
 		public static SessionConfig SessionConfig => new(tickRate: 60);
 
 		public static void Register() {
-			S.AddUpdateRoot(new GameUpdateRoot());
-			S.AddRollback(new GameRollback(S.FramesCapacity));
+			S.SetUpdateRoot(new GameUpdateRoot());
+			S.SetRollback(new GameWorldRollback(S.FramesCapacity));
 			S.Types().RegisterAll();
 		}
 	}

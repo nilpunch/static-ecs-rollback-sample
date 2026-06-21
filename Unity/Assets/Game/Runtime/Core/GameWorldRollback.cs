@@ -2,7 +2,7 @@ using FFS.Libraries.StaticPack;
 using Shenanicode.Rollback;
 
 namespace Game.Core {
-	public class GameRollback : IRollback {
+	public class GameWorldRollback : IRollback {
 		private const int EntitiesCount = 10000;
 		private const int BytesPerEntity = 64;
 		private const int WorldSnapshotLength = EntitiesCount * BytesPerEntity;
@@ -10,7 +10,7 @@ namespace Game.Core {
 		private readonly CyclicFrameCounter _cyclicFrameCounter;
 		private readonly BinaryPackWriter[] _worldFrames;
 
-		public GameRollback(int framesCapacity) {
+		public GameWorldRollback(int framesCapacity) {
 			_cyclicFrameCounter = new CyclicFrameCounter(framesCapacity);
 			_worldFrames = new BinaryPackWriter[framesCapacity];
 			for (var i = 0; i < _worldFrames.Length; i++) {
@@ -22,13 +22,11 @@ namespace Game.Core {
 
 		public void SaveFrame() {
 			_cyclicFrameCounter.SaveFrame();
-
 			W.Serializer.CreateWorldSnapshot(ref _worldFrames[_cyclicFrameCounter.CurrentFrame]);
 		}
 
 		public void Rollback(int frames) {
 			_cyclicFrameCounter.Rollback(frames);
-
 			W.Serializer.LoadWorldSnapshot(_worldFrames[_cyclicFrameCounter.CurrentFrame].AsReader(), hardReset: true);
 		}
 	}

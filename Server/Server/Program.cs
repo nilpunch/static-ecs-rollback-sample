@@ -38,9 +38,9 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	var clientListener = new LiteNetLibRemoteClientListener(parseResult.GetValue(portOption));
 
-	Server.Create(GameSessionSetup.SessionConfig, clientListener);
+	SRVR.Create(GameSessionSetup.SessionConfig, clientListener);
 	GameSessionSetup.Register();
-	Server.Initialize();
+	SRVR.Initialize();
 
 	GameWorldSetup.Create();
 	GameWorldSetup.Register();
@@ -56,18 +56,18 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	var stopwatch = Stopwatch.StartNew();
 	while (running) {
-		Server.Update(stopwatch.Elapsed.TotalSeconds);
+		SRVR.Update(stopwatch.Elapsed.TotalSeconds);
 		await Task.Yield();
 	}
 
 	clientListener.Stop();
 
 	GameWorldSetup.Destroy();
-	Server.Destroy();
+	SRVR.Destroy();
 
 	Console.WriteLine($"Exit with {stopwatch.Elapsed.TotalSeconds} seconds");
 
 	return 0;
 }
 
-public abstract class Server : Server<GameWorld>;
+public abstract class SRVR : Server<GameWorld>;
