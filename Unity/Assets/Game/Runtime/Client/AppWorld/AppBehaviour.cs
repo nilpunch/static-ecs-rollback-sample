@@ -7,7 +7,13 @@ namespace Game.Client {
 	/// </summary>
 	public class AppBehaviour<T> : MonoBehaviour, IResource where T : AppBehaviour<T> {
 		protected virtual void Awake() {
-			App.SetResource((T)this);
+			if (GetType() != typeof(T)) {
+				Debug.LogError("Type mismatch!");
+			}
+			if (App.HasResource<T>()) {
+				Debug.LogError("Duplicate resource!");
+			}
+			App.Set((T)this);
 		}
 
 		protected virtual void OnDestroy() {

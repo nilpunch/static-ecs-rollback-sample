@@ -1,0 +1,10 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=aabf7cb9549ae42b3b922e3f9419baa8&amp;type=3#MainMenuStyle"/>
+    <ui:VisualElement name="Container" style="flex-grow: 1;">
+        <ui:Label text="Main Menu" name="Header" class="header"/>
+        <ui:VisualElement name="Buttons" style="flex-grow: 1; justify-content: flex-end; margin-bottom: 200px;">
+            <ui:TextField placeholder-text="address:port" name="Address" class="menuItem" style="height: 70px; font-size: 40px; width: 1000px;"/>
+            <ui:Button text="Connect" name="Connect" class="button menuItem"/>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

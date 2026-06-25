@@ -9,12 +9,16 @@ namespace Game.Client {
 			App.Create();
 
 			ResourceConfigUtils.SetResourceConfigs<AppWorldType>();
+			AppResources.SetResources();
 
 			App.Initialize();
 		}
 
 		private void OnDestroy() {
-			App.Destroy();
+			if (App.Status != WorldStatus.NotCreated) {
+				AppResources.DisposeResources();
+				App.Destroy();
+			}
 		}
 
 		#if UNITY_EDITOR
@@ -26,6 +30,7 @@ namespace Game.Client {
 		private static void EditorApplicationOnPlayModeStateChanged(UnityEditor.PlayModeStateChange state) {
 			if (state == UnityEditor.PlayModeStateChange.EnteredEditMode) {
 				if (App.Status != WorldStatus.NotCreated) {
+					AppResources.DisposeResources();
 					App.Destroy();
 					Debug.Log("Emergency cleanup was triggered due to an unsafe exit from Play Mode.");
 				}

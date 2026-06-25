@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
 using Eflatun.SceneReference;
+using Game.Client.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

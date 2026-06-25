@@ -1,15 +1,11 @@
 namespace Game.Core {
 	public static class GameWorldSetup {
-		public static void Create() {
+		public static void CreateAndInitialize() {
 			W.Create();
 			Systems.Create();
-		}
 
-		public static void Register() {
 			W.Types().RegisterAll();
-		}
 
-		public static void Initialize() {
 			W.Initialize();
 			Systems.Initialize();
 		}

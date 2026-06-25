@@ -13,11 +13,11 @@ namespace Game.Client {
 		}
 
 		public void Enter<TState>() where TState : class, IState {
-			EnterInternal(App.GetResource<TState>(), static (nextState, token) => nextState.Enter(token)).Forget();
+			EnterInternal(App.Get<TState>(), static (nextState, token) => nextState.Enter(token)).Forget();
 		}
 
 		public void Enter<TState, TArgs>(TArgs args) where TState : class, IState<TArgs> {
-			EnterInternal(App.GetResource<TState>(), (nextState, token) => nextState.Enter(args, token)).Forget();
+			EnterInternal(App.Get<TState>(), (nextState, token) => nextState.Enter(args, token)).Forget();
 		}
 
 		private async UniTaskVoid EnterInternal<TNext>(TNext nextState, Func<TNext, CancellationToken, UniTask> enterNextState)

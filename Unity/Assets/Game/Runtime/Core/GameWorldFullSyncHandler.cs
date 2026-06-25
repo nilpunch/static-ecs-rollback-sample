@@ -2,7 +2,7 @@ using FFS.Libraries.StaticPack;
 using Game.Core;
 using Shenanicode.Rollback;
 
-namespace Game.Client
+namespace Game.Core
 {
 	public class GameWorldFullSyncHandler : IFullSyncHandler {
 		public void WriteFullSync(ref BinaryPackWriter writer) {

@@ -38,13 +38,10 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	var clientListener = new LiteNetLibRemoteClientListener(parseResult.GetValue(portOption));
 
-	SRVR.Create(GameSessionSetup.SessionConfig, clientListener);
+	SRVR.Create(GameSessionSetup.SessionConfig, clientListener, new GameWorldFullSyncHandler(), logger: new ConsoleLogger("Server"));
 	GameSessionSetup.Register();
 	SRVR.Initialize();
-
-	GameWorldSetup.Create();
-	GameWorldSetup.Register();
-	GameWorldSetup.Initialize();
+	GameWorldSetup.CreateAndInitialize();
 
 	Console.WriteLine("Hello, Static World!");
 	Console.WriteLine($"Port: {parseResult.GetValue(portOption)}");
