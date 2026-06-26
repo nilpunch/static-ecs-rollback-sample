@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shenanicode.Rollback", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shenanicode.Rollback.LiteNetLib", "..\Unity\Assets\Plugins\static-rollback-litenetlib\Runtime\Shenanicode.Rollback.LiteNetLib.csproj", "{D19237DB-5198-4327-82DA-EB7B39B2574C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixedPoint", "..\Unity\Assets\Plugins\fixed-point\Runtime\FixedPoint.csproj", "{BD80D0AA-9934-4F0A-85C6-66AF5285EA28}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{D19237DB-5198-4327-82DA-EB7B39B2574C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D19237DB-5198-4327-82DA-EB7B39B2574C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D19237DB-5198-4327-82DA-EB7B39B2574C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD80D0AA-9934-4F0A-85C6-66AF5285EA28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD80D0AA-9934-4F0A-85C6-66AF5285EA28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD80D0AA-9934-4F0A-85C6-66AF5285EA28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD80D0AA-9934-4F0A-85C6-66AF5285EA28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

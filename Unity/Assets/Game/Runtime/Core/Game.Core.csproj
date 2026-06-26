@@ -14,6 +14,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Plugins\StaticEcs\StaticEcs.csproj" />
 		<ProjectReference Include="..\..\..\Plugins\static-rollback\Runtime\Shenanicode.Rollback.csproj" />
+		<ProjectReference Include="..\..\..\Plugins\fixed-point\Runtime\FixedPoint.csproj" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Configuration)' == 'Debug'">

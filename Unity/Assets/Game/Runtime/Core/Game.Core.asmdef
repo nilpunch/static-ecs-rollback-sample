@@ -4,7 +4,8 @@
     "references": [
         "FFS.StaticEcs",
         "Shenanicode.Rollback",
-        "FFS.StaticPack"
+        "FFS.StaticPack",
+        "FixedPoint"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

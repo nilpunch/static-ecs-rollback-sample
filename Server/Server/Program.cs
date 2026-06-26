@@ -38,13 +38,12 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	ServerSetup.CreateAndInitialize(clientListener);
 
-	Console.WriteLine("Server initialized");
-	Console.WriteLine($"Port: {parseResult.GetValue(portOption)}");
 	if (parseResult.GetValue(fileOption) is { } parsedFile) {
 		Console.WriteLine($"WorldFile: {parsedFile.Name}");
 	}
 
 	clientListener.Start();
+	Console.WriteLine($"Started listening on port: {parseResult.GetValue(portOption)}");
 
 	var stopwatch = Stopwatch.StartNew();
 	while (running) {
@@ -53,9 +52,10 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 	}
 
 	clientListener.Stop();
+	Console.WriteLine();
 
 	ServerSetup.Destroy();
-	Console.WriteLine($"\nExit with {stopwatch.Elapsed.TotalSeconds} seconds");
+	Console.WriteLine($"Exited after {stopwatch.Elapsed.TotalSeconds:F0} seconds.");
 
 	return 0;
 }

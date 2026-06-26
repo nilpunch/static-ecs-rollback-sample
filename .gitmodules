@@ -16,3 +16,6 @@
 [submodule "Assets/Plugins/StaticEcs-Analyzer"]
 	path = Unity/Assets/Plugins/StaticEcs-Analyzer
 	url = https://github.com/Felid-Force-Studios/StaticEcs-Analyzer.git
+[submodule "Unity/Assets/Plugins/fixed-point"]
+	path = Unity/Assets/Plugins/fixed-point
+	url = https://github.com/nilpunch/fixed-point.git
