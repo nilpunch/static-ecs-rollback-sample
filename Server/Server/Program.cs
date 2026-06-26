@@ -1,7 +1,5 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
-using Game.Core;
-using Shenanicode.Rollback;
 using Shenanicode.Rollback.LiteNetLib;
 
 Option<ushort> portOption = new("--port")
@@ -38,12 +36,9 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	var clientListener = new LiteNetLibRemoteClientListener(parseResult.GetValue(portOption));
 
-	SRVR.Create(GameSessionSetup.SessionConfig, clientListener, new GameWorldFullSyncHandler(), logger: new ConsoleLogger("Server"));
-	GameSessionSetup.Register();
-	SRVR.Initialize();
-	GameWorldSetup.CreateAndInitialize();
+	ServerSetup.CreateAndInitialize(clientListener);
 
-	Console.WriteLine("Hello, Static World!");
+	Console.WriteLine("Server initialized");
 	Console.WriteLine($"Port: {parseResult.GetValue(portOption)}");
 	if (parseResult.GetValue(fileOption) is { } parsedFile) {
 		Console.WriteLine($"WorldFile: {parsedFile.Name}");
@@ -59,12 +54,8 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	clientListener.Stop();
 
-	GameWorldSetup.Destroy();
-	SRVR.Destroy();
-
-	Console.WriteLine($"Exit with {stopwatch.Elapsed.TotalSeconds} seconds");
+	ServerSetup.Destroy();
+	Console.WriteLine($"\nExit with {stopwatch.Elapsed.TotalSeconds} seconds");
 
 	return 0;
 }
-
-public abstract class SRVR : Server<GameWorld>;

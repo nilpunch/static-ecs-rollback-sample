@@ -22,6 +22,10 @@ namespace Game.Client {
 
 		private async UniTaskVoid EnterInternal<TNext>(TNext nextState, Func<TNext, CancellationToken, UniTask> enterNextState)
 			where TNext : class, IStateExit {
+			if (nextState == null) {
+				throw new Exception("Next state is null");
+			}
+
 			if (_activeState == nextState) {
 				return;
 			}

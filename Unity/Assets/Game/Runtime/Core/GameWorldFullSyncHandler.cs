@@ -10,7 +10,7 @@ namespace Game.Core
 		}
 
 		public void ReadFullSync(ref BinaryPackReader reader) {
-			W.Serializer.LoadWorldSnapshot(reader, hardReset: true);
+			W.Serializer.LoadWorldSnapshot(ref reader, hardReset: true);
 		}
 	}
 }

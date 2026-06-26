@@ -8,7 +8,8 @@ namespace Game.Client
 		public void SaveInterpolationState() {
 			var binaryPackWriter = BinaryPackWriter.CreateFromPool();
 			W.Serializer.CreateWorldSnapshot(ref binaryPackWriter);
-			WP.Serializer.LoadWorldSnapshot(binaryPackWriter.AsReader(), true);
+			var reader = binaryPackWriter.AsReader();
+			WP.Serializer.LoadWorldSnapshot(ref reader, true);
 		}
 	}
 }

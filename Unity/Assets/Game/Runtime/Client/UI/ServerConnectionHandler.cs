@@ -33,7 +33,7 @@ namespace Game.Client.UI {
 			_address.SetEnabled(false);
 			_connect.SetEnabled(false);
 
-			var serverConnection = App.Get<ServerConnection>().Connection;
+			var serverConnection = App.Get<AppServerConnection>().Connection;
 			serverConnection.Connect(ipEndPoint);
 
 			await UniTask.WhenAny(

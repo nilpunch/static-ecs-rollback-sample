@@ -1,7 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Eflatun.SceneReference;
-using Game.Core;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -10,13 +9,9 @@ namespace Game.Client {
 		[SerializeField] private SceneReference _scene;
 
 		public async UniTask Enter(CancellationToken token) {
-			var connection = App.Get<ServerConnection>().Connection;
+			var connection = App.Get<AppServerConnection>().Connection;
 
-			CLNT.Create(GameSessionSetup.SessionConfig, connection, new GameWorldFullSyncHandler(), logger: new UnityLogger("Client"));
-			S.SetInterpolationReceiver(new GameInterpolationReceiver());
-			GameSessionSetup.Register();
-			CLNT.Initialize();
-			GameWorldSetup.CreateAndInitialize();
+			ClientSetup.CreateAndInitialize(connection);
 
 			await SceneManager.LoadSceneAsync(_scene.Path, LoadSceneMode.Additive).ToUniTask(cancellationToken: token);
 			SceneManager.SetActiveScene(_scene.LoadedScene);
@@ -25,8 +20,7 @@ namespace Game.Client {
 		public async UniTask Exit(CancellationToken token) {
 			await SceneManager.UnloadSceneAsync(_scene.LoadedScene).ToUniTask(cancellationToken: token);
 
-			GameWorldSetup.Destroy();
-			CLNT.Destroy();
+			ClientSetup.Destroy();
 		}
 	}
 }

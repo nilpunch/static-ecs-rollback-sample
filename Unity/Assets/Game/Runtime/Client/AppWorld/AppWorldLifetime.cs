@@ -8,17 +8,21 @@ namespace Game.Client {
 		private void Awake() {
 			App.Create();
 
-			ResourceConfigUtils.SetResourceConfigs<AppWorldType>();
-			AppResources.SetResources();
+			AppGlobalResources.SetResources();
 
 			App.Initialize();
 		}
 
 		private void OnDestroy() {
 			if (App.Status != WorldStatus.NotCreated) {
-				AppResources.DisposeResources();
-				App.Destroy();
+				CleanupStatic();
 			}
+		}
+
+		private static void CleanupStatic() {
+			ClientSetup.Destroy();
+			AppGlobalResources.Dispose();
+			App.Destroy();
 		}
 
 		#if UNITY_EDITOR
@@ -30,8 +34,7 @@ namespace Game.Client {
 		private static void EditorApplicationOnPlayModeStateChanged(UnityEditor.PlayModeStateChange state) {
 			if (state == UnityEditor.PlayModeStateChange.EnteredEditMode) {
 				if (App.Status != WorldStatus.NotCreated) {
-					AppResources.DisposeResources();
-					App.Destroy();
+					CleanupStatic();
 					Debug.Log("Emergency cleanup was triggered due to an unsafe exit from Play Mode.");
 				}
 				UnityEditor.EditorApplication.playModeStateChanged -= EditorApplicationOnPlayModeStateChanged;

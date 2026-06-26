@@ -27,7 +27,8 @@ namespace Game.Core {
 
 		public void Rollback(int frames) {
 			_cyclicFrameCounter.Rollback(frames);
-			W.Serializer.LoadWorldSnapshot(_worldFrames[_cyclicFrameCounter.CurrentFrame].AsReader(), hardReset: true);
+			var reader = _worldFrames[_cyclicFrameCounter.CurrentFrame].AsReader();
+			W.Serializer.LoadWorldSnapshot(ref reader, hardReset: true);
 		}
 	}
 }
