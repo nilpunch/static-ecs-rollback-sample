@@ -1,8 +1,8 @@
 using FFS.Libraries.StaticEcs;
+using Game.Client;
 using UnityEngine;
-using Game.Utils;
 
-namespace Game.Client {
+namespace Game.Application {
 	[DefaultExecutionOrder(short.MinValue)]
 	public class AppWorldLifetime : MonoBehaviour {
 		private void Awake() {

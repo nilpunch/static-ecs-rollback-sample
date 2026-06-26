@@ -1,6 +1,7 @@
+using Game.Client;
 using Game.Utils;
 
-namespace Game.Client
+namespace Game.Application
 {
 	public static class AppGlobalResources {
 		public static void SetResources() {

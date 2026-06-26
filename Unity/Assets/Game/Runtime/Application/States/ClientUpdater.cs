@@ -1,6 +1,7 @@
+using Game.Client;
 using UnityEngine;
 
-namespace Game.Client
+namespace Game.Application
 {
 	public class ClientUpdater : MonoBehaviour {
 		private void Update() {

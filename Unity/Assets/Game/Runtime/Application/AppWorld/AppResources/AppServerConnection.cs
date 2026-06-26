@@ -1,7 +1,7 @@
 using FFS.Libraries.StaticEcs;
 using Shenanicode.Rollback.LiteNetLib;
 
-namespace Game.Client {
+namespace Game.Application {
 	public class AppServerConnection : IResource {
 		public LiteNetLibServerConnection Connection { get; } = new();
 	}

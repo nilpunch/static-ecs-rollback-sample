@@ -2,7 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using FFS.Libraries.StaticEcs;
 
-namespace Game.Client {
+namespace Game.Application {
 	public interface IStateExit : IResource {
 		UniTask Exit(CancellationToken token);
 	}

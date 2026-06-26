@@ -1,7 +1,7 @@
 using FFS.Libraries.StaticEcs;
 using UnityEngine;
 
-namespace Game.Client {
+namespace Game.Application {
 	/// <summary>
 	/// MonoBehaviour base to automatically register instance in <see cref="AppWorldType"/> resources.
 	/// </summary>
@@ -17,7 +17,7 @@ namespace Game.Client {
 		}
 
 		protected virtual void OnDestroy() {
-			if (App.Status == WorldStatus.Created) {
+			if (App.Status != WorldStatus.NotCreated) {
 				App.RemoveResource<T>();
 			}
 		}

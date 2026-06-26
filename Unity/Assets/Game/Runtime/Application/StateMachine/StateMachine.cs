@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace Game.Client {
+namespace Game.Application {
 	public class StateMachine : AppBehaviour<StateMachine> {
 		private IStateExit _activeState;
 		private CancellationTokenSource _transitionCts;

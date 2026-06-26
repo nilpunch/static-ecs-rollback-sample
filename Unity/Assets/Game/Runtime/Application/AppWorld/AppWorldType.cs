@@ -1,6 +1,6 @@
 using FFS.Libraries.StaticEcs;
 
-namespace Game.Client {
+namespace Game.Application {
 	public struct AppWorldType : IWorldType { }
 
 	public abstract class App : World<AppWorldType> {

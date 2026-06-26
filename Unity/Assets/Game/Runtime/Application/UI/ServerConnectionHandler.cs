@@ -2,10 +2,11 @@ using System;
 using System.Net;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game.Client;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Game.Client.UI {
+namespace Game.Application {
 	public class ServerConnectionHandler : MonoBehaviour {
 		[SerializeField] private float _connectionTimeout = 2f;
 		[SerializeField] private string _presetValue = string.Empty;
