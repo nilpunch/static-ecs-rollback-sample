@@ -5,7 +5,7 @@ namespace Game.Core {
 	public class GameWorldRollback : IRollback {
 		private const int EntitiesCount = 10000;
 		private const int BytesPerEntity = 64;
-		private const int WorldSnapshotLength = EntitiesCount * BytesPerEntity;
+		public const int WorldSnapshotLength = EntitiesCount * BytesPerEntity;
 
 		private readonly CyclicFrameCounter _cyclicFrameCounter;
 		private readonly BinaryPackWriter[] _worldFrames;
@@ -22,6 +22,7 @@ namespace Game.Core {
 
 		public void SaveFrame() {
 			_cyclicFrameCounter.SaveFrame();
+			_worldFrames[_cyclicFrameCounter.CurrentFrame].Position = 0;
 			W.Serializer.CreateWorldSnapshot(ref _worldFrames[_cyclicFrameCounter.CurrentFrame]);
 		}
 
