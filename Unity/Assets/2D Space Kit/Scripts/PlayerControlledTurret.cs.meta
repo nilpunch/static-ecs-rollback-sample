@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 989b509af42608b4b8aa67ddd2e8f1db
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 27662
+  packageName: 2D Space Kit
+  packageVersion: Initial 2
+  assetPath: Assets/2D Space Kit/Scripts/PlayerControlledTurret.cs
+  uploadId: 46238

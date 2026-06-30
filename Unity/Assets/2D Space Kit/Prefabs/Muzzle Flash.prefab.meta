@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 565cdc2ed7b030a41accd8f00ae59a50
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 27662
+  packageName: 2D Space Kit
+  packageVersion: Initial 2
+  assetPath: Assets/2D Space Kit/Prefabs/Muzzle Flash.prefab
+  uploadId: 46238

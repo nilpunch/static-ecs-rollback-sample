@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: ef8c86aea6dea874296d83b9d707b777
+labels:
+- Parallax
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 27662
+  packageName: 2D Space Kit
+  packageVersion: Initial 2
+  assetPath: Assets/2D Space Kit/Scripts/ParallaxLayer.cs
+  uploadId: 46238
