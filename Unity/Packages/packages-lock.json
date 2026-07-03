@@ -17,6 +17,13 @@
       },
       "hash": "6821c571090fc0828accced5dbd7635152c23887"
     },
+    "com.marijnzwemmer.unity-toolbar-extender": {
+      "version": "https://github.com/marijnz/unity-toolbar-extender.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "395236f9a7a057d2362857e5bb4f3f9a808a9627"
+    },
     "com.revenantx.litenetlib": {
       "version": "https://github.com/RevenantX/LiteNetLib.git?path=LiteNetLib#upm",
       "depth": 0,

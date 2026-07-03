@@ -7,7 +7,9 @@ namespace Game.Client
 
 	public static class ClientSetup {
 		public static void CreateAndInitialize(ServerConnection connection) {
-			CLNT.Create(GameSessionSetup.SessionConfig, connection, new GameWorldFullSyncHandler(), logger: new UnityLogger("Client"));
+			CLNT.Create(GameSessionSetup.SessionConfig,
+				connection, new GameWorldFullSyncHandler(),
+				logger: new UnityLogger("Client"));
 			GameSessionSetup.Register();
 			CLNT.Initialize();
 
@@ -16,7 +18,7 @@ namespace Game.Client
 		}
 
 		public static void Destroy() {
-			if (CLNT.IsCreated) {
+			if (CLNT.Status != SessionStatus.NotCreated) {
 				GameInterpolationSetup.Destroy();
 				GameWorldSetup.Destroy();
 				CLNT.Destroy();

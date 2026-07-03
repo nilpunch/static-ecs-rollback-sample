@@ -4,7 +4,7 @@ namespace Game.Client
 {
 	public static class GameInterpolationSetup {
 		public static void CreateAndInitialize() {
-			WP.Create();
+			WP.Create(GameWorldSetup.WorldConfig);
 			WP.Types().RegisterAll(typeof(GameWorld).Assembly);
 			WP.Initialize();
 

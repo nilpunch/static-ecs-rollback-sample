@@ -21,6 +21,7 @@ namespace Game.Application {
 
 		private static void CleanupStatic() {
 			ClientSetup.Destroy();
+			JymSetup.Destroy();
 			AppGlobalResources.Dispose();
 			App.Destroy();
 		}
