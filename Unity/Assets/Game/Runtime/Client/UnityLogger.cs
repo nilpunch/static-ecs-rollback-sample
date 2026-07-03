@@ -1,8 +1,7 @@
 using UnityEngine;
 using ILogger = Shenanicode.Rollback.ILogger;
 
-namespace Game.Client
-{
+namespace Game.Client {
 	public class UnityLogger : ILogger {
 		private readonly string _prefix;
 

@@ -1,7 +1,6 @@
 ﻿using FFS.Libraries.StaticEcs;
 
-namespace Game.Client
-{
+namespace Game.Client {
 	public struct GameWorldPrev : IWorldType { }
 
 	/// <summary>

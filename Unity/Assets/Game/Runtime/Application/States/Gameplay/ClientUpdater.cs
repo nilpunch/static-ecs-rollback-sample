@@ -1,8 +1,8 @@
+using System;
 using Game.Client;
 using UnityEngine;
 
-namespace Game.Application
-{
+namespace Game.Application {
 	public class ClientUpdater : MonoBehaviour {
 		private void Update() {
 			CLNT.Update(Time.realtimeSinceStartup);

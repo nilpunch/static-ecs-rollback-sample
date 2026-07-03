@@ -2,7 +2,6 @@ using System;
 using System.Net;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using Game.Client;
 using UnityEngine;
 using UnityEngine.UIElements;
 

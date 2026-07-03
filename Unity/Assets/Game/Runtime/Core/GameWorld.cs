@@ -2,15 +2,13 @@ using FFS.Libraries.StaticEcs;
 using Shenanicode.Rollback;
 
 namespace Game.Core {
-	public struct GameWorld : IWorldType, ISessionType { }
+	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
+		public abstract class W : World<TWorld> { }
 
-	public struct GameWorldPrev : IWorldType { }
+		public abstract class S : Session<TWorld> { }
 
-	public abstract class W : World<GameWorld> { }
+		public struct GameSystemsType : ISystemsType { }
 
-	public abstract class S : Session<GameWorld> { }
-
-	public struct GameSystemsType : ISystemsType { }
-
-	public abstract class Systems : W.Systems<GameSystemsType> { }
+		public abstract class Systems : W.Systems<GameSystemsType> { }
+	}
 }

@@ -1,24 +1,27 @@
 using FFS.Libraries.StaticEcs;
 using Fixed32;
+using Shenanicode.Rollback;
 
-namespace Game.Core.Simulation {
-	public class MovementIntegrationSystem : ISystem {
-		public void Update() {
-			W.Query().For((ref PhysicalBody physicalBody, ref Velocity velocity) => {
-				if (velocity.Angular > FAngle.HalfPI) {
-					velocity.Angular = FAngle.HalfPI;
-				}
-				if (velocity.Angular < -FAngle.HalfPI) {
-					velocity.Angular = -FAngle.HalfPI;
-				}
+namespace Game.Core {
+	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
+		public class MovementIntegrationSystem : ISystem {
+			public void Update() {
+				W.Query().For((ref PhysicalBody physicalBody, ref Velocity velocity) => {
+					if (velocity.Angular > FAngle.HalfPI) {
+						velocity.Angular = FAngle.HalfPI;
+					}
+					if (velocity.Angular < -FAngle.HalfPI) {
+						velocity.Angular = -FAngle.HalfPI;
+					}
 
-				var linearDelta = velocity.Linear * Const.DeltaTime;
-				var angularDelta = velocity.Angular * Const.DeltaTime;
+					var linearDelta = velocity.Linear * Const.DeltaTime;
+					var angularDelta = velocity.Angular * Const.DeltaTime;
 
-				physicalBody.CenterOfMass += linearDelta;
-				physicalBody.Rotation += angularDelta;
-				physicalBody.WorldOrigin = physicalBody.OriginOffset.RotateAround(physicalBody.CenterOfMass, physicalBody.Rotation.Counterclockwise);
-			});
+					physicalBody.CenterOfMass += linearDelta;
+					physicalBody.Rotation += angularDelta;
+					physicalBody.WorldOrigin = physicalBody.OriginOffset.RotateAround(physicalBody.CenterOfMass, physicalBody.Rotation.Counterclockwise);
+				});
+			}
 		}
 	}
 }

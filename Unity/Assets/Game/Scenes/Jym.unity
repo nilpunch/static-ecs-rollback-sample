@@ -441,7 +441,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1188256732}
+  - component: {fileID: 1188256734}
   - component: {fileID: 1188256733}
+  - component: {fileID: 1188256735}
   m_Layer: 0
   m_Name: JymUpdater
   m_TagString: Untagged
@@ -473,9 +475,34 @@ MonoBehaviour:
   m_GameObject: {fileID: 1188256730}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e06d34ee8b734b16baf257cecf967423, type: 3}
+  m_Script: {fileID: 11500000, guid: 94f2dd78c9de49bf9d0f4b1c642ac116, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Game.Application::Game.Application.JymUpdater
+  m_EditorClassIdentifier: Game.Application::Game.Application.ServerUpdater
+--- !u!114 &1188256734
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1188256730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 693e5b1bf62642a586b57d5e531add49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Application::Game.Application.JymClientUpdater
+--- !u!114 &1188256735
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1188256730}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15803641997440e3ac2ce92b68fbff31, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Application::Game.Application.SessionInputUpdater
+  _moveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

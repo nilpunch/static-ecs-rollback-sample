@@ -1,7 +1,10 @@
-using Game.Core;
+using FFS.Libraries.StaticEcs;
 using Shenanicode.Rollback;
+using static Game.Core.Core<ServerWorld>;
 
-public abstract class SRVR : Server<GameWorld> { }
+public struct ServerWorld : IWorldType, ISessionType { }
+
+public abstract class SRVR : Server<ServerWorld> { }
 
 public static class ServerSetup {
 	public static void CreateAndInitialize(IRemoteClientListener remoteClientListener) {

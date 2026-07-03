@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Game.Core.Simulation {
+namespace Game.Core {
 	[StructLayout(LayoutKind.Sequential)]
 	public struct CellIndex {
 		public int X;

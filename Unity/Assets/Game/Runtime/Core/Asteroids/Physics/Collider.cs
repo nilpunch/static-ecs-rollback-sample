@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using FFS.Libraries.StaticEcs;
 using Fixed32;
 
-namespace Game.Core.Simulation {
+namespace Game.Core {
 	public struct Collider : IComponent, ITrackableAdded, ITrackableChanged, IDisableable {
 		public FVector2 Offset;
 		public FVector2 WorldPosition;
