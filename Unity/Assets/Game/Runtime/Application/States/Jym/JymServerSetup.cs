@@ -8,7 +8,7 @@ namespace Game.Application {
 
 	public abstract class SRVR : Server<ServerWorld> { }
 
-	public static class ServerSetup {
+	public static class JymServerSetup {
 		public static void CreateAndInitialize(IRemoteClientListener remoteClientListener) {
 			SRVR.Create(GameSessionSetup.SessionConfig, remoteClientListener, new GameWorldFullSyncHandler(), logger: new UnityLogger("Server"));
 			GameSessionSetup.Register();

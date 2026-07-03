@@ -15,7 +15,7 @@ namespace Game.Application {
 		public async UniTask Enter(CancellationToken token) {
 			// Server.
 			var clientListener = new LiteNetLibRemoteClientListener(_port);
-			ServerSetup.CreateAndInitialize(clientListener);
+			JymServerSetup.CreateAndInitialize(clientListener);
 			clientListener.Start();
 
 			// Client.
@@ -31,7 +31,7 @@ namespace Game.Application {
 			await SceneManager.UnloadSceneAsync(_scene.LoadedScene).ToUniTask(cancellationToken: token);
 
 			ClientSetup.Destroy();
-			ServerSetup.Destroy();
+			JymServerSetup.Destroy();
 		}
 	}
 }
