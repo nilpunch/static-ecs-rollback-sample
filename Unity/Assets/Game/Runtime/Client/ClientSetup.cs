@@ -9,10 +9,7 @@ namespace Game.Client {
 
 	public static class ClientSetup {
 		public static void CreateAndInitialize(ServerConnection connection) {
-			CLNT.Create(GameSessionSetup.SessionConfig,
-				connection,
-				new GameWorldFullSyncHandler(),
-				logger: new UnityLogger("Client"));
+			CLNT.Create(GameSessionSetup.SessionConfig, connection, new GameWorldFullSyncHandler(), logger: new UnityLogger("Client"));
 			GameSessionSetup.Register();
 			CLNT.Initialize();
 

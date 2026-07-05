@@ -1,6 +1,9 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using FFS.Libraries.StaticEcs;
+using Game.Core;
 using Shenanicode.Rollback.LiteNetLib;
+using static Game.Core.Core<ServerWorld>;
 
 Option<ushort> portOption = new("--port")
 {
@@ -38,9 +41,14 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 
 	ServerSetup.CreateAndInitialize(clientListener);
 
-	if (parseResult.GetValue(fileOption) is { } parsedFile) {
-		Console.WriteLine($"WorldFile: {parsedFile.Name}");
-	}
+	// Populate world:
+	// if (parseResult.GetValue(fileOption) is { } parsedFile) {
+	// 	Console.WriteLine($"WorldFile: {parsedFile.Name}");
+	// }
+	W.NewEntities<Default>(100, onCreate: entity => {
+		entity.Add<PhysicalBody>();
+		entity.Add<Collider>();
+	});
 
 	clientListener.Start();
 	Console.WriteLine($"Started listening on port: {parseResult.GetValue(portOption)}");

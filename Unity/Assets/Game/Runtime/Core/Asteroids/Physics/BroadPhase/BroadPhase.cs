@@ -10,7 +10,7 @@ namespace Game.Core {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public class BroadPhase : IResource {
 			private readonly List<W.Entity> _queryBuffer = new();
-			private readonly Stack<List<W.Entity>> _listPool = new();
+			private readonly Stack<List<EntityGID>> _listPool = new();
 
 			public readonly int Width;
 			public readonly int Height;
@@ -18,7 +18,7 @@ namespace Game.Core {
 			public readonly FVector2 InvertedCellSize;
 			public readonly FVector2 OriginOffset;
 
-			public readonly List<W.Entity>[] Grid;
+			public readonly List<EntityGID>[] Grid;
 			public uint QueryId;
 
 			public BroadPhase(int width, int height, FVector2 cellSize) {
@@ -27,7 +27,7 @@ namespace Game.Core {
 				CellSize = cellSize;
 				InvertedCellSize = FVector2.One / cellSize;
 				OriginOffset = new FVector2(Width.ToFP(), Height.ToFP()) * CellSize / 2;
-				Grid = new List<W.Entity>[Width * Height];
+				Grid = new List<EntityGID>[Width * Height];
 			}
 
 			public Guid? Guid() => new Guid("559781fb614f49408cfc7cd5be71dc4e");
@@ -88,7 +88,8 @@ namespace Game.Core {
 							continue;
 						}
 
-						foreach (var entity in grid[index]) {
+						foreach (var entityGid in grid[index]) {
+							var entity = entityGid.Unpack<TWorld>();
 							ref var info = ref entity.Mut<BroadPhaseInfo>()!;
 							if (entity.IsNotDestroyed && info.QueryId != queryId) {
 								info.QueryId = queryId;
@@ -178,8 +179,8 @@ namespace Game.Core {
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			private List<W.Entity> GetEmptyList() {
-				return _listPool.Count > 0 ? _listPool.Pop() : new List<W.Entity>();
+			private List<EntityGID> GetEmptyList() {
+				return _listPool.Count > 0 ? _listPool.Pop() : new List<EntityGID>();
 			}
 		}
 	}

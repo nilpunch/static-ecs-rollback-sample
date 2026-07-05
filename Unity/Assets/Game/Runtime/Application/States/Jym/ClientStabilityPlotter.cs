@@ -1,8 +1,7 @@
 using Game.Client;
 using UnityEngine;
 
-namespace Game.Application
-{
+namespace Game.Application {
 	public class ClientStabilityPlotter : MonoBehaviour {
 		private const int Samples = 240; // ~4s at 60fps
 		private readonly float[] _lead = new float[Samples];
@@ -49,7 +48,7 @@ namespace Game.Application
 			for (var i = 0; i < Samples; i++) {
 				var idx = (_head + i) % Samples;
 				var x = rect.x + i;
-				Dot(x, Map(rect, lo, hi, _lead[idx]), new Color(0.4f, 0.8f, 1f, 1f));        // smoothed lead
+				Dot(x, Map(rect, lo, hi, _lead[idx]), new Color(0.4f, 0.8f, 1f, 1f)); // smoothed lead
 			}
 
 			GUI.Label(new Rect(14, 134, 400, 20),

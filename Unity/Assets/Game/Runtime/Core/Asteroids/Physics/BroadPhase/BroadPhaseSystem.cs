@@ -15,7 +15,7 @@ namespace Game.Core {
 					});
 
 				// Remove dying.
-				W.Query<Or<AllWithDisabled<Collider>, All<DestroySelf>>>().For(ref broadPhase,
+				W.Query<Or<AllOnlyDisabled<Collider>, All<DestroySelf>>>().For(ref broadPhase,
 					static (ref BroadPhase broadPhase, W.Entity entity, in BroadPhaseInfo info) => {
 						broadPhase.Remove(entity, info);
 					});
