@@ -34,15 +34,13 @@ namespace Game.Application {
 
 		private void OnGUI() {
 			var sync = CLNT.TickSync;
-			var target = sync.TargetMarginTicks;
 
 			// graph bounds in tick units
-			const float lo = -1f, hi = 8f;
+			const float lo = -5f, hi = 5f;
 			var rect = new Rect(10, 10, Samples, 120);
 
 			Box(rect, new Color(0, 0, 0, 0.6f));
 			// reference lines: target buffer (green) and zero (red = drop threshold)
-			HLine(rect, lo, hi, target, new Color(0.3f, 1f, 0.3f, 0.5f));
 			HLine(rect, lo, hi, 0f, new Color(1f, 0.3f, 0.3f, 0.5f));
 
 			for (var i = 0; i < Samples; i++) {
@@ -52,7 +50,7 @@ namespace Game.Application {
 			}
 
 			GUI.Label(new Rect(14, 134, 400, 20),
-				$"lead={sync.SmoothedLeadTime * sync.TickRate:F2} (set {sync.PredictionLeadTicks}) target={target}");
+				$"lead={sync.SmoothedLeadTime * 1000:F1}ms (set {sync.PredictionLeadTime * 1000:F1}ms)");
 		}
 
 		private static float Map(Rect r, float lo, float hi, float v) =>

@@ -355,7 +355,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.Client::Game.Client.UI.ServerConnectionHandler
   _connectionTimeout: 2
-  _presetValue: '127.0.0.1:'
+  _presetValue: 127.0.0.1:1887
 --- !u!4 &1607741162
 Transform:
   m_ObjectHideFlags: 0
