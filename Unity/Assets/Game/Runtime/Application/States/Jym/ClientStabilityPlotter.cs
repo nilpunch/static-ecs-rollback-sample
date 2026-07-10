@@ -51,6 +51,9 @@ namespace Game.Application {
 
 			GUI.Label(new Rect(14, 134, 400, 20),
 				$"lead={sync.SmoothedLeadTime * 1000:F1}ms (set {sync.PredictionLeadTime * 1000:F1}ms)");
+
+			GUI.Label(new Rect(14, 170, 400, 20),
+				$"predictedTime={sync.CalculateRenderTime(Time.realtimeSinceStartup):F1}ms");
 		}
 
 		private static float Map(Rect r, float lo, float hi, float v) =>
