@@ -1,7 +1,8 @@
 ﻿using Game.Core;
-using static Game.Core.Core<Game.Client.ClientWorld>;
 
 namespace Game.Client {
+	using static Core<ClientWorld>;
+
 	public static class GameInterpolationSetup {
 		public static void CreateAndInitialize() {
 			WP.Create(GameWorldSetup.WorldConfig);

@@ -1,6 +1,6 @@
 using FFS.Libraries.StaticEcs;
 using Shenanicode.Rollback;
-using static Game.Core.Core<ServerWorld>;
+using static Game.Core<ServerWorld>;
 
 public struct ServerWorld : IWorldType, ISessionType { }
 

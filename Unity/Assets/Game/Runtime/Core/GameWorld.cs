@@ -1,7 +1,7 @@
 using FFS.Libraries.StaticEcs;
 using Shenanicode.Rollback;
 
-namespace Game.Core {
+namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public abstract class W : World<TWorld> { }
 

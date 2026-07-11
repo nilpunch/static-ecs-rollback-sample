@@ -3,7 +3,7 @@ using System.Diagnostics;
 using FFS.Libraries.StaticEcs;
 using Game.Core;
 using Shenanicode.Rollback.LiteNetLib;
-using static Game.Core.Core<ServerWorld>;
+using static Game.Core<ServerWorld>;
 
 Option<ushort> portOption = new("--port")
 {

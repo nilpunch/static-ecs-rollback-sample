@@ -1,7 +1,8 @@
 using FFS.Libraries.StaticEcs;
+using Game.Core;
 using Shenanicode.Rollback;
 
-namespace Game.Core {
+namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public static class GameWorldSetup {
 			public static WorldConfig WorldConfig => new() {

@@ -1,8 +1,9 @@
 ﻿using FFS.Libraries.StaticPack;
 using Shenanicode.Rollback;
-using static Game.Core.Core<Game.Client.ClientWorld>;
 
 namespace Game.Client {
+	using static Core<ClientWorld>;
+
 	public class GameInterpolationReceiver : IInterpolationReceiver {
 		private BinaryPackWriter _buffer = BinaryPackWriter.Create(new byte[GameWorldRollback.WorldSnapshotLength]);
 

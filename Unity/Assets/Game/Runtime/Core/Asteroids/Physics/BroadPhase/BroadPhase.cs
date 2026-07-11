@@ -4,9 +4,10 @@ using System.Runtime.CompilerServices;
 using FFS.Libraries.StaticEcs;
 using FFS.Libraries.StaticPack;
 using Fixed32;
+using Game.Core;
 using Shenanicode.Rollback;
 
-namespace Game.Core {
+namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public class BroadPhase : IResource {
 			private readonly List<W.Entity> _queryBuffer = new();

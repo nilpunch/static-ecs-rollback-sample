@@ -2,7 +2,7 @@ using Game.Client;
 using Game.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static Game.Core.Core<Game.Client.ClientWorld>;
+using static Game.Core<Game.Client.ClientWorld>;
 
 namespace Game.Application
 {

@@ -2,7 +2,7 @@ using FFS.Libraries.StaticEcs;
 using Fixed32;
 using Shenanicode.Rollback;
 
-namespace Game.Core {
+namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public static class AsteroidFactory {
 			public static EntityGID CreateRectangular(ushort width, ushort height, FP cellSpacing, FP cellRadius, FVector2 position, FVector2 velocity, FAngle rotation = default, FAngle angularVelocity = default) {
