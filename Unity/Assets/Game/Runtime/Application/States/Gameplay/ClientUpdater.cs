@@ -16,11 +16,11 @@ namespace Game.Application {
 			viewSynchronizer.SynchronizeFreeEntities();
 			viewSynchronizer.SynchronizeBroadPhaseEntities(GetCameraBounds(Camera.main));
 
-			ViewTransformInterpolator.Schedule(viewSynchronizer);
+			viewSynchronizer.ScheduleTransformSync(CLNT.CalculateInterpolation(Time.realtimeSinceStartup));
 		}
 
 		private void LateUpdate() {
-			ViewTransformInterpolator.Complete();
+			App.Get<ViewSynchronizer>().CompleteTransformSync();
 		}
 
 		public static FAABB2 GetCameraBounds(Camera camera) {

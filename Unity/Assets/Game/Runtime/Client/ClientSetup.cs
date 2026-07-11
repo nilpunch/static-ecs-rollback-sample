@@ -5,8 +5,10 @@ namespace Game.Client {
 	public abstract class CLNT : Client<ClientWorld> { }
 
 	public static class ClientSetup {
-		public static void CreateAndInitialize(ServerConnection connection) {
-			CLNT.Create(GameSessionSetup.SessionConfig, connection, new GameWorldFullSyncHandler(), logger: new UnityLogger("Client"));
+		public static void CreateAndInitialize(ServerConnection connection, TickSyncConfig tickSyncConfig = default) {
+			CLNT.Create(GameSessionSetup.SessionConfig, connection, new GameWorldFullSyncHandler(),
+				tickSyncConfig: tickSyncConfig,
+				logger: new UnityLogger("Client"));
 			GameSessionSetup.Register();
 			CLNT.Initialize();
 

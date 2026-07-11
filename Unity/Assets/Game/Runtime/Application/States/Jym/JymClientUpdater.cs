@@ -1,16 +1,18 @@
+using FFS.Libraries.StaticEcs;
 using Fixed32;
 using Game.Client;
 using UnityEngine;
 
 namespace Game.Application {
 	public class JymClientUpdater : MonoBehaviour {
-		[SerializeField] private bool _enittyViewCulling;
+		[SerializeField] private bool _viewCulling;
+		[SerializeField] private bool _interpolate;
 
 		private void Update() {
-			CLNT.Update(Time.realtimeSinceStartup);
+			CLNT.Update(Time.time);
 
 			var viewSynchronizer = App.Get<ViewSynchronizer>();
-			if (_enittyViewCulling) {
+			if (_viewCulling) {
 				viewSynchronizer.SynchronizeFreeEntities();
 				viewSynchronizer.SynchronizeBroadPhaseEntities(GetCameraBounds(Camera.main));
 			}
@@ -18,11 +20,11 @@ namespace Game.Application {
 				viewSynchronizer.SynchronizeAllDebug();
 			}
 
-			ViewTransformInterpolator.Schedule(viewSynchronizer);
+			viewSynchronizer.ScheduleTransformSync(CLNT.CalculateInterpolation(Time.time), _interpolate);
 		}
 
 		private void LateUpdate() {
-			ViewTransformInterpolator.Complete();
+			App.Get<ViewSynchronizer>().CompleteTransformSync();
 		}
 
 		public static FAABB2 GetCameraBounds(Camera camera) {

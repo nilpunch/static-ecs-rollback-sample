@@ -10,8 +10,15 @@ using Shenanicode.Rollback;
 namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public class BroadPhase : IResource {
+			private const int InitialCapacity = 128;
+
 			private readonly List<W.Entity> _queryBuffer = new();
-			private readonly Stack<List<EntityGID>> _listPool = new();
+
+			public struct Node {
+				// Next node in the cell chain, -1 if tail. While free: next free node.
+				public int Next;
+				public W.Entity Entity;
+			}
 
 			public readonly int Width;
 			public readonly int Height;
@@ -19,83 +26,87 @@ namespace Game {
 			public readonly FVector2 InvertedCellSize;
 			public readonly FVector2 OriginOffset;
 
-			public readonly List<EntityGID>[] Grid;
+			public int[] Heads;
+			public Node[] Nodes;
+
+			public int UsedNodesCount;
+			public int NextFreeNodeIndex;
 			public uint QueryId;
 
 			public BroadPhase(int width, int height, FVector2 cellSize) {
+				if (!MathUtils.IsPowerOfTwo(width * height)) {
+					throw new ArgumentException("width * height must be power of 2");
+				}
+
 				Width = width;
 				Height = height;
 				CellSize = cellSize;
+
 				InvertedCellSize = FVector2.One / cellSize;
-				OriginOffset = new FVector2(Width.ToFP(), Height.ToFP()) * CellSize / 2;
-				Grid = new List<EntityGID>[Width * Height];
+				OriginOffset = new FVector2(Width.ToFP(), Height.ToFP()) * cellSize / 2;
+
+				Heads = new int[Width * Height];
+				for (var i = 0; i < Heads.Length; i++) {
+					Heads[i] = -1;
+				}
+
+				Nodes = new Node[InitialCapacity];
+				UsedNodesCount = 0;
+				NextFreeNodeIndex = -1;
 			}
 
 			public Guid? Guid() => new Guid("559781fb614f49408cfc7cd5be71dc4e");
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Write(ref BinaryPackWriter writer) {
-				var cellCountPos = writer.MakePoint(sizeof(uint));
-				var cellCount = 0u;
-				for (var i = 0; i < Grid.Length; i++) {
-					if (Grid[i] != null) {
-						writer.WriteUint((uint)i);
-						writer.WriteList(Grid[i]);
-						cellCount++;
-					}
-				}
-				writer.WriteUintAt(cellCountPos, cellCount);
+				writer.WriteArrayUnmanaged(Heads);
+				writer.WriteArrayUnmanaged(Nodes);
+				writer.WriteInt(UsedNodesCount);
+				writer.WriteInt(NextFreeNodeIndex);
+				writer.WriteUint(QueryId);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void Read(ref BinaryPackReader reader, byte version) {
-				for (var i = 0; i < Grid.Length; i++) {
-					if (Grid[i] != null) {
-						_listPool.Push(Grid[i]);
-						Grid[i] = null;
-					}
-				}
-
-				var cellCount = reader.ReadUint();
-				for (var i = 0; i < cellCount; i++) {
-					var index = reader.ReadUint();
-					Grid[index] = GetEmptyList();
-					reader.ReadList(ref Grid[index]);
-				}
+				reader.ReadArrayUnmanaged(ref Heads);
+				reader.ReadArrayUnmanaged(ref Nodes);
+				UsedNodesCount = reader.ReadInt();
+				NextFreeNodeIndex = reader.ReadInt();
+				QueryId = reader.ReadUint();
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public List<W.Entity> FindNearbyEntities(FAABB2 bounds) {
 				_queryBuffer.Clear();
 
+				// CellIndex already clamps into [0,Width) x [0,Height).
 				var minIndex = CellIndex(bounds.Min);
 				var maxIndex = CellIndex(bounds.Max);
-
-				var startX = MathUtils.Max(0, minIndex.X);
-				var startY = MathUtils.Max(0, minIndex.Y);
-
-				var endX = MathUtils.Min(Width - 1, maxIndex.X);
-				var endY = MathUtils.Min(Height - 1, maxIndex.Y);
 
 				MathUtils.IncrementWrapTo1(ref QueryId);
 				var queryId = QueryId;
 
-				var grid = Grid;
-				for (var x = startX; x <= endX; x++) {
-					for (var y = startY; y <= endY; y++) {
-						var index = FlatIndex(x, y);
+				var heads = Heads;
+				var nodes = Nodes;
 
-						if (grid[index] == null) {
-							continue;
-						}
+				for (var x = minIndex.X; x <= maxIndex.X; x++) {
+					for (var y = minIndex.Y; y <= maxIndex.Y; y++) {
+						var nodeIndex = heads[FlatIndex(x, y)];
 
-						foreach (var entityGid in grid[index]) {
-							var entity = entityGid.Unpack<TWorld>();
-							ref var info = ref entity.Mut<BroadPhaseInfo>()!;
-							if (entity.IsNotDestroyed && info.QueryId != queryId) {
-								info.QueryId = queryId;
-								_queryBuffer.Add(entity);
+						while (nodeIndex != -1) {
+							var node = nodes[nodeIndex];
+							var entity = node.Entity;
+
+							// Only touch the component of a live entity.
+							if (entity.IsNotDestroyed) {
+								ref var info = ref entity.Mut<BroadPhaseInfo>()!;
+								if (info.QueryId != queryId) {
+									info.QueryId = queryId;
+									_queryBuffer.Add(entity);
+								}
 							}
+
+							nodeIndex = node.Next;
 						}
 					}
 				}
@@ -130,12 +141,13 @@ namespace Game {
 				info.LowerBound = minIndex;
 				info.UpperBound = maxIndex;
 
-				var grid = Grid;
 				for (var x = minIndex.X; x <= maxIndex.X; x++) {
 					for (var y = minIndex.Y; y <= maxIndex.Y; y++) {
-						var index = FlatIndex(x, y);
-						grid[index] ??= GetEmptyList();
-						grid[index].Add(entity);
+						var cell = FlatIndex(x, y);
+						var nodeIndex = AllocateNode();
+
+						Nodes[nodeIndex] = new Node { Entity = entity, Next = Heads[cell] };
+						Heads[cell] = nodeIndex;
 					}
 				}
 			}
@@ -145,19 +157,31 @@ namespace Game {
 				var min = info.LowerBound;
 				var max = info.UpperBound;
 
-				var grid = Grid;
+				var nodes = Nodes;
+
 				for (var x = min.X; x <= max.X; x++) {
 					for (var y = min.Y; y <= max.Y; y++) {
-						var index = FlatIndex(x, y);
-						var list = grid[index];
+						var cell = FlatIndex(x, y);
+						var nodeIndex = Heads[cell];
+						var prevIndex = -1;
 
-						var removeIndex = list.IndexOf(entity);
-						list[removeIndex] = list[^1];
-						list.RemoveAt(list.Count - 1);
+						while (nodeIndex != -1) {
+							var node = nodes[nodeIndex];
+							if (node.Entity == entity) {
+								// Unlink from the singly-linked cell chain.
+								if (prevIndex == -1) {
+									Heads[cell] = node.Next;
+								}
+								else {
+									nodes[prevIndex].Next = node.Next;
+								}
 
-						if (list.Count == 0) {
-							_listPool.Push(list);
-							grid[index] = null;
+								FreeNode(nodeIndex);   // leaves a reusable hole
+								break;
+							}
+
+							prevIndex = nodeIndex;
+							nodeIndex = node.Next;
 						}
 					}
 				}
@@ -179,9 +203,29 @@ namespace Game {
 				return info.LowerBound != minIndex || info.UpperBound != maxIndex;
 			}
 
+			// Reuse a hole if one exists, otherwise bump the frontier (growing if full).
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			private List<EntityGID> GetEmptyList() {
-				return _listPool.Count > 0 ? _listPool.Pop() : new List<EntityGID>();
+			private int AllocateNode() {
+				if (NextFreeNodeIndex != -1) {
+					var index = NextFreeNodeIndex;
+					NextFreeNodeIndex = Nodes[index].Next;
+					return index;
+				}
+
+				if (UsedNodesCount == Nodes.Length) {
+					Array.Resize(ref Nodes, Nodes.Length * 2);
+				}
+
+				return UsedNodesCount++;
+			}
+
+			// Turn a slot into a hole and push it onto the free list. The frontier
+			// (UsedNodesCount) is intentionally left untouched.
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private void FreeNode(int index) {
+				Nodes[index].Entity = default;
+				Nodes[index].Next = NextFreeNodeIndex;
+				NextFreeNodeIndex = index;
 			}
 		}
 	}

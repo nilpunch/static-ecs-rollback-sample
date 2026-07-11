@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Eflatun.SceneReference;
 using Game.Client;
+using Shenanicode.Rollback;
 using Shenanicode.Rollback.LiteNetLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -21,7 +22,7 @@ namespace Game.Application {
 
 			// Client.
 			var connection = App.Get<AppServerConnection>().Connection;
-			ClientSetup.CreateAndInitialize(connection);
+			ClientSetup.CreateAndInitialize(connection, TickSyncConfig.Robust);
 			connection.Connect(new IPEndPoint(IPAddress.Loopback, _port));
 
 			await SceneManager.LoadSceneAsync(_scene.Path, LoadSceneMode.Additive).ToUniTask(cancellationToken: token);

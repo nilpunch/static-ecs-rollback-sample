@@ -7,8 +7,6 @@ namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public class CollisionResolutionSystem : ISystem {
 			public void Update() {
-				return;
-
 				W.Query().BatchDelete<W.Multi<ContactPair>>();
 
 				var broadPhase = W.GetResource<BroadPhase>();
@@ -19,7 +17,7 @@ namespace Game {
 						for (var i = 0; i < nearby.Count; i++) {
 							var entityB = nearby[i];
 
-							if (entityA == entityB || entityA.GID.Id > entityB.GID.Id) {
+							if (entityA == entityB || entityA.ID > entityB.ID) {
 								continue;
 							}
 
@@ -119,7 +117,7 @@ namespace Game {
 				if (corrMag < FP.Zero) {
 					corrMag = FP.Zero;
 				}
-				var correction = normal * (corrMag / 2.ToFP() * percent);
+				var correction = normal * (corrMag / 2 * percent);
 				bodyA.WorldCoM -= correction;
 				bodyB.WorldCoM += correction;
 			}

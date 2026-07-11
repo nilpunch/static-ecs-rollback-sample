@@ -171,6 +171,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Essential
       objectReference: {fileID: 0}
+    - target: {fileID: 8191255174909904201, guid: 2579200bc62c240539bb8026935daf38, type: 3}
+      propertyPath: orthographic size
+      value: 20
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2800718657430718595, guid: 2579200bc62c240539bb8026935daf38, type: 3}
     m_RemovedGameObjects: []
@@ -212,6 +216,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 693e5b1bf62642a586b57d5e531add49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Application::Game.Application.JymClientUpdater
+  _viewCulling: 1
+  _interpolate: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

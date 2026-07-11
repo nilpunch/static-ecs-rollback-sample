@@ -11,12 +11,13 @@ namespace Game {
 				Const.DeltaTime = FP.One / S.TickRate;
 				Const.InvDeltaTime = S.TickRate.ToFP();
 
-				W.SetResource(new BroadPhase(200, 100, FVector2.One));
+				W.SetResource(new BroadPhase(256, 512, FVector2.One * 2));
 
 				Systems.Add(new MovementIntegrationSystem());
 				Systems.Add(new ColliderWorldPositionSyncSystem());
 				Systems.Add(new BroadPhaseSystem());
 				Systems.Add(new CollisionResolutionSystem());
+				Systems.Add(new DebugPushAroundSystem());
 				Systems.Add(new DestroySelfSystem());
 			}
 
@@ -26,8 +27,8 @@ namespace Game {
 					var entity = W.NewEntity<Default>();
 
 					var pos = new FVector2(
-						FP.FromRatio(random.Next(-50, 50), 1),
-						FP.FromRatio(random.Next(-50, 50), 1)
+						FP.FromRatio(random.Next(-100, 100), 1),
+						FP.FromRatio(random.Next(-100, 100), 1)
 					);
 
 					var radius = FP.FromRatio(random.Next(1, 3), 1);

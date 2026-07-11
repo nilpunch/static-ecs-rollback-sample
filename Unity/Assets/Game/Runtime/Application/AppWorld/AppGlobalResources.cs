@@ -13,7 +13,6 @@ namespace Game.Application {
 		public static void Dispose() {
 			App.Get<AppServerConnection>().Connection.Close();
 			App.Get<ViewSynchronizer>().Dispose();
-			ViewTransformInterpolator.Dispose();
 		}
 	}
 }

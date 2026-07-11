@@ -1,41 +1,37 @@
+using System;
 using System.Collections.Generic;
 using FFS.Libraries.StaticEcs;
 using Fixed32;
 using Game.Core;
+using Game.Utils;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
+using Unity.Mathematics;
+using UnityEngine;
 using UnityEngine.Jobs;
 using static Game.Core<Game.Client.ClientWorld>;
 
 namespace Game.Client {
-	/// <summary>
-	/// VIBE CODE
-	/// Reconciles live <see cref="ViewAsset"/> entities with pooled <see cref="EntityView"/> instances.
-	/// Rollback means state changes sporadically and is not observable via reactive events, so every frame we
-	/// re-scan and mark-and-sweep: create/reuse views for entities that should have one, destroy the rest.
-	///
-	/// Persistent storage lives here (not on the entities) because the ECS state is rolled back and entity slots
-	/// are reused — a view must survive that and be reattached to whatever GID currently owns it.
-	/// Keyed by <see cref="EntityGID"/> (carries a version) so a reused slot never aliases a stale view.
-	///
-	/// MUST be driven from the Unity update loop, once per rendered frame — never as an ECS system, which would
-	/// re-run during rollback resimulation and thrash GameObjects.
-	/// </summary>
 	public class ViewSynchronizer : IResource {
-		/// <summary>
-		/// Compact list of every live view, kept index-aligned in lockstep with <see cref="Transforms"/>.
-		/// Consumed by <see cref="ViewTransformInterpolator"/> — slot <c>i</c> here is slot <c>i</c> there.
-		/// </summary>
 		public readonly List<EntityView> ActiveViews = new();
+		public TransformAccessArray Transforms = new(64);
 
-		/// <summary>
-		/// Root transforms of <see cref="ActiveViews"/>, maintained incrementally (Add / RemoveAtSwapBack) so the
-		/// interpolator can hand it straight to a transform job with no per-frame rebuild.
-		/// </summary>
-		public TransformAccessArray Transforms;
+		public NativeArray<Vector2> FromPos;
+		public NativeArray<Vector2> ToPos;
+		public NativeArray<float> FromAngle;
+		public NativeArray<float> ToAngle;
+
+		private VariantPool<ViewAsset, EntityView> _pool = new();
+		private Transform[] _poolRoots = new Transform[4];
 
 		private readonly Dictionary<EntityGID, Tracked> _views = new();
 		private readonly List<EntityGID> _stale = new();
-		private static int _syncFreeId;
-		private static int _syncBroadPhaseId;
+		private int _freeSyncId;
+		private int _broadPhaseSyncId;
+
+		private JobHandle _jobHandle;
+		private bool _jobScheduled;
 
 		private enum SyncType : byte {
 			Free,
@@ -44,73 +40,57 @@ namespace Game.Client {
 
 		private struct Tracked {
 			public EntityView View;
-			public int Index; // slot in ActiveViews / Transforms.
+			public int Index;
 			public int SyncId;
 			public ViewAsset Asset;
 			public SyncType SyncType;
 		}
 
-		public ViewSynchronizer() {
-			Transforms = new TransformAccessArray(64);
-		}
+		// ── Sync ──────────────────────────────────────────────────────────────────
 
 		public void SynchronizeAllDebug() {
-			_syncFreeId++;
+			_freeSyncId++;
 
 			var self = this;
 			W.Query().For(ref self,
 				static (ref ViewSynchronizer self, W.Entity entity, in ViewAsset asset) => {
-					self.Actualize(entity.GID, asset, _syncFreeId, SyncType.Free);
+					self.Actualize(entity.GID, asset, self._freeSyncId, SyncType.Free);
 				});
 
-			Sweep(_syncFreeId, SyncType.Free);
+			Sweep(_freeSyncId, SyncType.Free);
 		}
 
-		/// <summary>
-		/// Reconcile views against every entity that currently owns a valid <see cref="ViewAsset"/>.
-		/// Only non-broad phase one.
-		/// </summary>
 		public void SynchronizeFreeEntities() {
-			_syncFreeId++;
+			_freeSyncId++;
 
 			var self = this;
 			W.Query<None<BroadPhaseInfo>>().For(ref self,
 				static (ref ViewSynchronizer self, W.Entity entity, in ViewAsset asset) => {
-					self.Actualize(entity.GID, asset, _syncFreeId, SyncType.Free);
+					self.Actualize(entity.GID, asset, self._freeSyncId, SyncType.Free);
 				});
 
-			Sweep(_syncFreeId, SyncType.Free);
+			Sweep(_freeSyncId, SyncType.Free);
 		}
 
-		/// <summary>
-		/// Reconcile views only for entities whose collider falls inside <paramref name="cameraBounds"/>.
-		/// Entities without a <see cref="BroadPhaseInfo"/> (no collider) are never indexed and get no view.
-		/// </summary>
 		public void SynchronizeBroadPhaseEntities(FAABB2 cameraBounds) {
-			_syncBroadPhaseId++;
+			_broadPhaseSyncId++;
 
-			var nearby = W.GetResource<BroadPhase>().FindNearbyEntities(cameraBounds);
-			foreach (var entity in nearby) {
+			foreach (var entity in W.GetResource<BroadPhase>().FindNearbyEntities(cameraBounds)) {
 				if (entity.Has<ViewAsset>()) {
-					Actualize(entity.GID, entity.Read<ViewAsset>(), _syncBroadPhaseId, SyncType.BroadPhase);
+					Actualize(entity.GID, entity.Read<ViewAsset>(), _broadPhaseSyncId, SyncType.BroadPhase);
 				}
 			}
 
-			Sweep(_syncBroadPhaseId, SyncType.BroadPhase);
+			Sweep(_broadPhaseSyncId, SyncType.BroadPhase);
 		}
 
-		/// <summary>
-		/// Ensure the entity has a matching, live view and stamp it as seen this frame.
-		/// </summary>
 		private void Actualize(EntityGID gid, ViewAsset asset, int syncId, SyncType syncType) {
 			if (!asset.IsValid) {
-				// Invalid asset: leave any existing view unstamped so the sweep reclaims it.
 				return;
 			}
 
 			if (_views.TryGetValue(gid, out var tracked)) {
 				if (tracked.Asset != asset) {
-					// The entity swapped its view (e.g. state changed under it) — replace in place.
 					DestroyView(tracked.View);
 					tracked.View = CreateView(asset, gid);
 					tracked.Asset = asset;
@@ -131,9 +111,6 @@ namespace Game.Client {
 			_views[gid] = tracked;
 		}
 
-		/// <summary>
-		/// Destroy every view whose entity was not seen this frame (dead, out of view, or lost its asset).
-		/// </summary>
 		private void Sweep(int syncId, SyncType syncType) {
 			foreach (var pair in _views) {
 				if (pair.Value.SyncType == syncType && pair.Value.SyncId != syncId) {
@@ -148,7 +125,6 @@ namespace Game.Client {
 			_stale.Clear();
 		}
 
-		/// <summary>Destroy the view and swap-remove it from <see cref="ActiveViews"/>, keeping slots tight.</summary>
 		private void RemoveView(EntityGID gid) {
 			var tracked = _views[gid];
 			DestroyView(tracked.View);
@@ -159,27 +135,147 @@ namespace Game.Client {
 				var moved = ActiveViews[last];
 				ActiveViews[index] = moved;
 
-				// The moved view kept its GID (only the removed one was reset) — repoint its slot.
 				var movedTracked = _views[moved.Entity];
 				movedTracked.Index = index;
 				_views[moved.Entity] = movedTracked;
 			}
 
 			ActiveViews.RemoveAt(last);
-			Transforms.RemoveAtSwapBack(index); // Mirrors the list swap-remove; on index == last it just drops the tail.
+			Transforms.RemoveAtSwapBack(index);
 			_views.Remove(gid);
 		}
 
+		// ── Pool ──────────────────────────────────────────────────────────────────
+
 		private EntityView CreateView(ViewAsset asset, EntityGID gid) {
-			var view = EntityViewFactory.CreateView(asset);
+			if (!_pool.ContainsVariant(asset)) {
+				var prefab = ViewDataBase.Instance.GetViewPrefab(asset);
+				var poolRoot = new GameObject(prefab.name + " Pool").transform;
+				_pool.AddVariant(asset, new Pool<EntityView>(new PrefabFactory<EntityView>(prefab, poolRoot)));
+
+				if (_poolRoots.Length <= asset.Id) {
+					Array.Resize(ref _poolRoots, asset.Id << 1);
+				}
+
+				_poolRoots[asset.Id] = poolRoot;
+			}
+
+			var view = _pool.Get(asset);
 			view.AssignEntity(gid);
 			return view;
 		}
 
 		private void DestroyView(EntityView view) {
 			view.RemoveEntity();
-			EntityViewFactory.DestroyView(view);
+			view.transform.SetParent(_poolRoots[_pool.GetKey(view).Id]);
+			_pool.Return(view);
 		}
+
+		// ── Interpolation ───────────────────────────────────────────────────────────
+
+		public void ScheduleTransformSync(float alpha, bool useInterpolation = true) {
+			var count = ActiveViews.Count;
+			if (count == 0) {
+				_jobScheduled = false;
+				return;
+			}
+
+			EnsureCapacity(count);
+			Gather(count, useInterpolation);
+
+			_jobHandle = new InterpolateJob {
+				FromPos = FromPos,
+				ToPos = ToPos,
+				FromAngle = FromAngle,
+				ToAngle = ToAngle,
+				Alpha = alpha,
+			}.Schedule(Transforms);
+			_jobScheduled = true;
+		}
+
+		public void CompleteTransformSync() {
+			if (_jobScheduled) {
+				_jobHandle.Complete();
+				_jobScheduled = false;
+			}
+		}
+
+		private void Gather(int count, bool useInterpolation) {
+			for (var i = 0; i < count; i++) {
+				var gid = ActiveViews[i].Entity;
+
+				ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
+				var toPos = body.WorldOrigin.FromFP();
+				var toAngle = body.Rotation.Radians.ToFloat();
+
+				Vector2 fromPos;
+				float fromAngle;
+				if (useInterpolation && gid.TryUnpack<GameWorldPrev>(out var entityPrev)) {
+					ref readonly var bodyPrev = ref entityPrev.Read<PhysicalBody>()!;
+					fromPos = bodyPrev.WorldOrigin.FromFP();
+					fromAngle = bodyPrev.Rotation.Radians.ToFloat();
+				}
+				else {
+					fromPos = toPos;
+					fromAngle = toAngle;
+				}
+
+				ToPos[i] = toPos;
+				ToAngle[i] = toAngle;
+				FromPos[i] = fromPos;
+				FromAngle[i] = fromAngle;
+			}
+		}
+
+		private void EnsureCapacity(int count) {
+			if (FromPos.IsCreated && FromPos.Length >= count) {
+				return;
+			}
+
+			DisposeArrays();
+
+			var capacity = Mathf.NextPowerOfTwo(count);
+			FromPos = new NativeArray<Vector2>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+			ToPos = new NativeArray<Vector2>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+			FromAngle = new NativeArray<float>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+			ToAngle = new NativeArray<float>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+		}
+
+		[BurstCompile]
+		private struct InterpolateJob : IJobParallelForTransform {
+			[ReadOnly] public NativeArray<Vector2> FromPos;
+			[ReadOnly] public NativeArray<Vector2> ToPos;
+			[ReadOnly] public NativeArray<float> FromAngle;
+			[ReadOnly] public NativeArray<float> ToAngle;
+			public float Alpha;
+
+			public void Execute(int index, TransformAccess transform) {
+				var a = FromPos[index];
+				var b = ToPos[index];
+				var x = a.x + (b.x - a.x) * Alpha;
+				var y = a.y + (b.y - a.y) * Alpha;
+
+				var half = LerpAngle(FromAngle[index], ToAngle[index], Alpha) * 0.5f;
+				transform.position = new Vector3(x, y, 0f);
+
+				math.sincos(half, out var sin, out var cos);
+				transform.rotation = new Quaternion(0f, 0f, sin, cos);
+			}
+
+			private static float LerpAngle(float from, float to, float t) {
+				var delta = math.fmod(to - from, 2f * math.PI);
+				if (delta > math.PI) {
+					delta -= 2f * math.PI;
+				}
+				else if (delta < -math.PI) {
+					delta += 2f * math.PI;
+				}
+
+				return from + delta * t;
+			}
+		}
+
+		// ── Lifecycle ───────────────────────────────────────────────────────────────
 
 		public void Clear() {
 			foreach (var view in ActiveViews) {
@@ -196,11 +292,34 @@ namespace Game.Client {
 		}
 
 		public void Dispose() {
+			CompleteTransformSync();
+
 			if (Transforms.isCreated) {
 				Transforms.Dispose();
 			}
 
-			EntityViewFactory.Reset();
+			DisposeArrays();
+
+			_pool = new VariantPool<ViewAsset, EntityView>();
+			Array.Fill(_poolRoots, null);
+		}
+
+		private void DisposeArrays() {
+			if (FromPos.IsCreated) {
+				FromPos.Dispose();
+			}
+
+			if (ToPos.IsCreated) {
+				ToPos.Dispose();
+			}
+
+			if (FromAngle.IsCreated) {
+				FromAngle.Dispose();
+			}
+
+			if (ToAngle.IsCreated) {
+				ToAngle.Dispose();
+			}
 		}
 	}
 }

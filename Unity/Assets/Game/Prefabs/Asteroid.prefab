@@ -137,7 +137,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cdab9676457d456d862c29e4ff7eea6c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Application::Game.Application.EntityView
-  _entityBehaviours: []
+  _entityBehaviours:
+  - {fileID: 2414420270410179706}
   <RootTransform>k__BackingField: {fileID: 837978567153830106}
 --- !u!114 &2414420270410179706
 MonoBehaviour:
