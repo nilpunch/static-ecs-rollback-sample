@@ -140,6 +140,7 @@ MonoBehaviour:
     asset: {fileID: 102900000, guid: ddd6b4baa372d486280f3b5f58278a22, type: 3}
     guid: ddd6b4baa372d486280f3b5f58278a22
   _port: 1886
+  _numberOfAsteroids: 1000
 --- !u!1 &7276300181358760790
 GameObject:
   m_ObjectHideFlags: 0

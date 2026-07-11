@@ -19,9 +19,9 @@ namespace Game {
 					var linearDelta = velocity.Linear * Const.DeltaTime;
 					var angularDelta = velocity.Angular * Const.DeltaTime;
 
-					physicalBody.CenterOfMass += linearDelta;
+					physicalBody.WorldCoM += linearDelta;
 					physicalBody.Rotation += angularDelta;
-					physicalBody.WorldOrigin = physicalBody.OriginOffset.RotateAround(physicalBody.CenterOfMass, physicalBody.Rotation.Counterclockwise);
+					physicalBody.WorldOrigin = physicalBody.WorldCoM + physicalBody.Rotation.Counterclockwise * physicalBody.OriginOffset;
 				});
 			}
 		}

@@ -12,10 +12,11 @@ namespace Game.Application {
 				return;
 			}
 
-			App.Get<ViewSynchronizer>().SynchronizeFreeEntities();
-			App.Get<ViewSynchronizer>().SynchronizeBroadPhaseEntities(GetCameraBounds(Camera.main));
+			var viewSynchronizer = App.Get<ViewSynchronizer>();
+			viewSynchronizer.SynchronizeFreeEntities();
+			viewSynchronizer.SynchronizeBroadPhaseEntities(GetCameraBounds(Camera.main));
 
-			ViewTransformInterpolator.Schedule();
+			ViewTransformInterpolator.Schedule(viewSynchronizer);
 		}
 
 		private void LateUpdate() {

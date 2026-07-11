@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using FFS.Libraries.StaticEcs;
 using UnityEngine;
 
-namespace Game.Application {
+namespace Game.Client {
 	public class EntityView : MonoBehaviour {
 		[SerializeField] private List<EntityBehaviour> _entityBehaviours = new();
 

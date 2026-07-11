@@ -5,7 +5,7 @@ using Game.Core;
 using UnityEngine.Jobs;
 using static Game.Core<Game.Client.ClientWorld>;
 
-namespace Game.Application {
+namespace Game.Client {
 	/// <summary>
 	/// VIBE CODE
 	/// Reconciles live <see cref="ViewAsset"/> entities with pooled <see cref="EntityView"/> instances.
@@ -52,6 +52,18 @@ namespace Game.Application {
 
 		public ViewSynchronizer() {
 			Transforms = new TransformAccessArray(64);
+		}
+
+		public void SynchronizeAllDebug() {
+			_syncFreeId++;
+
+			var self = this;
+			W.Query().For(ref self,
+				static (ref ViewSynchronizer self, W.Entity entity, in ViewAsset asset) => {
+					self.Actualize(entity.GID, asset, _syncFreeId, SyncType.Free);
+				});
+
+			Sweep(_syncFreeId, SyncType.Free);
 		}
 
 		/// <summary>
@@ -184,11 +196,11 @@ namespace Game.Application {
 		}
 
 		public void Dispose() {
-			Clear();
-
 			if (Transforms.isCreated) {
 				Transforms.Dispose();
 			}
+
+			EntityViewFactory.Reset();
 		}
 	}
 }

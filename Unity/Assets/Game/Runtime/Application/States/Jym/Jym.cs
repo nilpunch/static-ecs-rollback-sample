@@ -11,11 +11,12 @@ namespace Game.Application {
 	public class Jym : AppBehaviour<Jym>, IState {
 		[SerializeField] private SceneReference _scene;
 		[SerializeField] private int _port = 1887;
+		[SerializeField] private int _numberOfAsteroids = 100;
 
 		public async UniTask Enter(CancellationToken token) {
 			// Server.
 			var clientListener = new LiteNetLibRemoteClientListener(_port);
-			JymServerSetup.CreateAndInitialize(clientListener);
+			JymServerSetup.CreateAndInitialize(clientListener, _numberOfAsteroids);
 			clientListener.Start();
 
 			// Client.

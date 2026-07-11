@@ -7,7 +7,7 @@ namespace Game {
 		public class ColliderWorldPositionSyncSystem : ISystem {
 			public void Update() {
 				W.Query<None<W.Link<Body>>>().For(static (ref Collider collider, in PhysicalBody physicalBody) => {
-					collider.WorldPosition = physicalBody.WorldOrigin + physicalBody.Rotation.Counterclockwise * collider.Offset;
+					collider.WorldPosition = physicalBody.WorldCoM + physicalBody.Rotation.Counterclockwise * (physicalBody.OriginOffset + collider.Offset);
 				});
 
 				W.Query().For(static (ref Collider collider, in W.Link<Body> bodyLink) => {
@@ -15,8 +15,8 @@ namespace Game {
 						return;
 					}
 
-					ref readonly var transform = ref body.Read<PhysicalBody>()!;
-					collider.WorldPosition = transform.WorldOrigin + transform.Rotation.Counterclockwise * collider.Offset;
+					ref readonly var physicalBody = ref body.Read<PhysicalBody>()!;
+					collider.WorldPosition = physicalBody.WorldCoM + physicalBody.Rotation.Counterclockwise * (physicalBody.OriginOffset + collider.Offset);
 				});
 			}
 		}

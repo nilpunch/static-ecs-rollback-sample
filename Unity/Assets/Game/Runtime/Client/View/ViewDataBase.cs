@@ -3,7 +3,7 @@ using Game.Core;
 using Game.Utils;
 using UnityEngine;
 
-namespace Game.Application {
+namespace Game.Client {
 	[CreateAssetMenu(menuName = "ECS/View DB", fileName = "View DB")]
 	public class ViewDataBase : ScriptableConfig<ViewDataBase> {
 		[field: SerializeField] public List<EntityView> ViewPrefabs { get; private set; } = new();

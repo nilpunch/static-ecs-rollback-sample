@@ -2,7 +2,7 @@
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace Game.Application.Editor {
+namespace Game.Client.Editor {
 	[CanEditMultipleObjects]
 	[CustomEditor(typeof(EntityView))]
 	internal class EntityViewEditor : UnityEditor.Editor {

@@ -3,9 +3,9 @@ using Game.Core;
 using Game.Utils;
 using UnityEngine;
 
-namespace Game.Application {
+namespace Game.Client {
 	public static class EntityViewFactory {
-		private static readonly VariantPool<ViewAsset, EntityView> _viewPool = new();
+		private static VariantPool<ViewAsset, EntityView> _viewPool = new();
 		private static Transform[] _poolRoots = new Transform[4];
 
 		public static EntityView CreateView(ViewAsset viewAsset) {
@@ -28,6 +28,11 @@ namespace Game.Application {
 		public static void DestroyView(EntityView view) {
 			view.transform.SetParent(_poolRoots[_viewPool.GetKey(view).Id]);
 			_viewPool.Return(view);
+		}
+
+		public static void Reset() {
+			_viewPool = new VariantPool<ViewAsset, EntityView>();
+			Array.Fill(_poolRoots, null);
 		}
 	}
 }

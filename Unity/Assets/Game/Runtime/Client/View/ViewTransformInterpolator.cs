@@ -10,7 +10,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 
-namespace Game.Application {
+namespace Game.Client {
 	/// <summary>
 	/// Writes the interpolated pose of every active view from a Burst job over
 	/// <see cref="ViewSynchronizer.Transforms"/> (which the synchronizer keeps index-aligned with its views).
@@ -33,8 +33,8 @@ namespace Game.Application {
 		private static bool _scheduled;
 
 		/// <summary>Read poses on the main thread and schedule the interpolation job. Call once per frame.</summary>
-		public static void Schedule() {
-			var sync = App.Get<ViewSynchronizer>();
+		public static void Schedule(ViewSynchronizer viewSynchronizer) {
+			var sync = viewSynchronizer;
 			var views = sync.ActiveViews;
 			var count = views.Count;
 			if (count == 0) {

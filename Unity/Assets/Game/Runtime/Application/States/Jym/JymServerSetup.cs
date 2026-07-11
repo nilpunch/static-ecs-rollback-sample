@@ -10,12 +10,14 @@ namespace Game.Application {
 	public abstract class SRVR : Server<ServerWorld> { }
 
 	public static class JymServerSetup {
-		public static void CreateAndInitialize(IRemoteClientListener remoteClientListener) {
+		public static void CreateAndInitialize(IRemoteClientListener remoteClientListener, int numberOfAsteroids) {
 			SRVR.Create(GameSessionSetup.SessionConfig, remoteClientListener, new GameWorldFullSyncHandler(), logger: new UnityLogger("Server"));
 			GameSessionSetup.Register();
 			SRVR.Initialize();
 
 			GameWorldSetup.CreateAndInitialize();
+
+			SimulationSetup.PopulateAsteroids(numberOfAsteroids);
 		}
 
 		public static void Destroy() {

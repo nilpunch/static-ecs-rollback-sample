@@ -13,6 +13,8 @@ public static class ServerSetup {
 		SRVR.Initialize();
 
 		GameWorldSetup.CreateAndInitialize();
+
+		SimulationSetup.PopulateAsteroids(100);
 	}
 
 	public static void Destroy() {

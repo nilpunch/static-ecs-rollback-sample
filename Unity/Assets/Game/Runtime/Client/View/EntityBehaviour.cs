@@ -1,18 +1,19 @@
 ﻿using FFS.Libraries.StaticEcs;
 using UnityEngine;
 
-namespace Game.Application {
+namespace Game.Client {
 	public abstract class EntityBehaviour : MonoBehaviour {
-		public EntityGID Entity { get; private set; }
+		public EntityGID EntityGID { get; private set; }
+		public W.Entity Entity => EntityGID.Unpack<ClientWorld>();
 
 		public void AssignEntity(EntityGID entity) {
-			Entity = entity;
+			EntityGID = entity;
 			OnEntityAssigned();
 		}
 
 		public void RemoveEntity() {
 			OnEntityRemoved();
-			Entity = default;
+			EntityGID = default;
 		}
 
 		protected virtual void OnEntityAssigned() { }
