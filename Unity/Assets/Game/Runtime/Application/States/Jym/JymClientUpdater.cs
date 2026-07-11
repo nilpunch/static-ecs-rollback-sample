@@ -6,7 +6,7 @@ namespace Game.Application {
 		private void Update() {
 			CLNT.Update(Time.realtimeSinceStartup);
 
-			App.Get<ViewSynchronizer>().SynchronizeAll();
+			App.Get<ViewSynchronizer>().SynchronizeFreeEntities();
 
 			ViewTransformInterpolator.Schedule();
 		}

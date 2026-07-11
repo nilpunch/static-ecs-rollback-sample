@@ -34,13 +34,20 @@ namespace Game.Application {
 
 		private readonly Dictionary<EntityGID, Tracked> _views = new();
 		private readonly List<EntityGID> _stale = new();
-		private int _frame;
+		private static int _syncFreeId;
+		private static int _syncBroadPhaseId;
+
+		private enum SyncType : byte {
+			Free,
+			BroadPhase
+		}
 
 		private struct Tracked {
-			public ViewAsset Asset;
 			public EntityView View;
 			public int Index; // slot in ActiveViews / Transforms.
-			public int Frame;
+			public int SyncId;
+			public ViewAsset Asset;
+			public SyncType SyncType;
 		}
 
 		public ViewSynchronizer() {
@@ -49,56 +56,41 @@ namespace Game.Application {
 
 		/// <summary>
 		/// Reconcile views against every entity that currently owns a valid <see cref="ViewAsset"/>.
-		/// </summary>
-		public void SynchronizeAll() {
-			_frame++;
-
-			var self = this;
-			W.Query().For(ref self,
-				static (ref ViewSynchronizer self, W.Entity entity, in ViewAsset asset) => {
-					self.Actualize(entity.GID, asset);
-				});
-
-			Sweep();
-		}
-
-		/// <summary>
-		/// Reconcile views against every entity that currently owns a valid <see cref="ViewAsset"/>.
 		/// Only non-broad phase one.
 		/// </summary>
-		public void SynchronizeNonBroadPhase() {
-			_frame++;
+		public void SynchronizeFreeEntities() {
+			_syncFreeId++;
 
 			var self = this;
 			W.Query<None<BroadPhaseInfo>>().For(ref self,
 				static (ref ViewSynchronizer self, W.Entity entity, in ViewAsset asset) => {
-					self.Actualize(entity.GID, asset);
+					self.Actualize(entity.GID, asset, _syncFreeId, SyncType.Free);
 				});
 
-			Sweep();
+			Sweep(_syncFreeId, SyncType.Free);
 		}
 
 		/// <summary>
 		/// Reconcile views only for entities whose collider falls inside <paramref name="cameraBounds"/>.
 		/// Entities without a <see cref="BroadPhaseInfo"/> (no collider) are never indexed and get no view.
 		/// </summary>
-		public void SynchronizeInView(FAABB2 cameraBounds) {
-			_frame++;
+		public void SynchronizeBroadPhaseEntities(FAABB2 cameraBounds) {
+			_syncBroadPhaseId++;
 
 			var nearby = W.GetResource<BroadPhase>().FindNearbyEntities(cameraBounds);
 			foreach (var entity in nearby) {
 				if (entity.Has<ViewAsset>()) {
-					Actualize(entity.GID, entity.Read<ViewAsset>());
+					Actualize(entity.GID, entity.Read<ViewAsset>(), _syncBroadPhaseId, SyncType.BroadPhase);
 				}
 			}
 
-			Sweep();
+			Sweep(_syncBroadPhaseId, SyncType.BroadPhase);
 		}
 
 		/// <summary>
 		/// Ensure the entity has a matching, live view and stamp it as seen this frame.
 		/// </summary>
-		private void Actualize(EntityGID gid, ViewAsset asset) {
+		private void Actualize(EntityGID gid, ViewAsset asset, int syncId, SyncType syncType) {
 			if (!asset.IsValid) {
 				// Invalid asset: leave any existing view unstamped so the sweep reclaims it.
 				return;
@@ -122,16 +114,17 @@ namespace Game.Application {
 				Transforms.Add(tracked.View.RootTransform);
 			}
 
-			tracked.Frame = _frame;
+			tracked.SyncId = syncId;
+			tracked.SyncType = syncType;
 			_views[gid] = tracked;
 		}
 
 		/// <summary>
 		/// Destroy every view whose entity was not seen this frame (dead, out of view, or lost its asset).
 		/// </summary>
-		private void Sweep() {
+		private void Sweep(int syncId, SyncType syncType) {
 			foreach (var pair in _views) {
-				if (pair.Value.Frame != _frame) {
+				if (pair.Value.SyncType == syncType && pair.Value.SyncId != syncId) {
 					_stale.Add(pair.Key);
 				}
 			}

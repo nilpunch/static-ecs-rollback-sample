@@ -107,6 +107,7 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+/[Aa]ssets/_[Rr]ecovery*
 
 # Keep Сore
 !Assets/Game/Runtime/Core/Game.Core.csproj
