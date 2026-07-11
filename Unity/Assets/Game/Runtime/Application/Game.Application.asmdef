@@ -12,7 +12,10 @@
         "Shenanicode.Rollback.LiteNetLib",
         "Game.Client",
         "LiteNetLib",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "FixedPoint",
+        "Unity.Burst",
+        "Unity.Mathematics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

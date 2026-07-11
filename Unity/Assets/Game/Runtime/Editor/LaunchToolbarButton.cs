@@ -4,7 +4,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityToolbarExtender;
 
-namespace Game.Application {
+namespace Game.Application.Editor {
 	[InitializeOnLoad]
 	internal static class LaunchToolbarButton {
 		private static readonly (string Path, string Name)[] ScenePaths = {

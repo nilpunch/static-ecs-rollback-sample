@@ -1,11 +1,7 @@
-using FFS.Libraries.StaticEcs;
 using Shenanicode.Rollback;
+using static Game.Core<Game.Client.ClientWorld>;
 
 namespace Game.Client {
-	using static Core<ClientWorld>;
-
-	public struct ClientWorld : IWorldType, ISessionType { }
-
 	public abstract class CLNT : Client<ClientWorld> { }
 
 	public static class ClientSetup {

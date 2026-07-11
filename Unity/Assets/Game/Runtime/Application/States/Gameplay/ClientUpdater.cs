@@ -8,7 +8,16 @@ namespace Game.Application {
 
 			if (!CLNT.Connection.IsConnected) {
 				App.Get<StateMachine>().Enter<MainMenu>();
+				return;
 			}
+
+			App.Get<ViewSynchronizer>().SynchronizeAll();
+
+			ViewTransformInterpolator.Schedule();
+		}
+
+		private void LateUpdate() {
+			ViewTransformInterpolator.Complete();
 		}
 	}
 }
