@@ -59,6 +59,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Game.Application::Game.Application.SessionInputUpdater
   _moveInput: {fileID: -1680190386980627800, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  _radius: 10
+  _accelration: 40
 --- !u!114 &7404739794367857751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -140,7 +142,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5
+  orthographic size: 50
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

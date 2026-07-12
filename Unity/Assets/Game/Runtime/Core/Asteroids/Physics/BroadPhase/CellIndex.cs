@@ -2,24 +2,20 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Game.Core {
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Explicit, Size = 8)]
 	public struct CellIndex {
-		public int X;
-		public int Y;
-
-		public CellIndex(int x, int y) {
-			X = x;
-			Y = y;
-		}
+		[FieldOffset(0)] public long Raw;
+		[FieldOffset(0)] public int X;
+		[FieldOffset(4)] public int Y;
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator ==(CellIndex a, CellIndex b) {
-			return a.X == b.X && a.Y == b.Y;
+			return a.Raw == b.Raw;
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static bool operator !=(CellIndex a, CellIndex b) {
-			return a.X != b.X || a.Y != b.Y;
+			return a.Raw != b.Raw;
 		}
 
 		public override bool Equals(object obj) {
@@ -32,11 +28,11 @@ namespace Game.Core {
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public bool Equals(CellIndex other) {
-			return X == other.X && Y == other.Y;
+			return Raw == other.Raw;
 		}
 
 		public override int GetHashCode() {
-			return GenerateHashCode((int)X, (int)Y);
+			return GenerateHashCode(X, Y);
 		}
 
 		private static int GenerateHashCode(int x, int y) {

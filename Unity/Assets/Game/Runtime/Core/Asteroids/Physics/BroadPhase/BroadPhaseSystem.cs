@@ -22,7 +22,7 @@ namespace Game {
 					});
 
 				// Update existing.
-				W.Query().For(ref broadPhase,
+				W.Query<AllChanged<Collider>>().For(ref broadPhase,
 					static (ref BroadPhase broadPhase, W.Entity entity, ref BroadPhaseInfo info, in Collider collider) => {
 						broadPhase.UpdateInfo(entity, ref info, collider.WorldBounds);
 					});

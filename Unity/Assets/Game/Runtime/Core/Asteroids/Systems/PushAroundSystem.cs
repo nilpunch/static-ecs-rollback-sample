@@ -1,4 +1,5 @@
 ﻿using FFS.Libraries.StaticEcs;
+using Fixed;
 using Fixed32;
 using Game.Core;
 using Shenanicode.Rollback;
@@ -18,10 +19,10 @@ namespace Game {
 				foreach (var entity in nearbyEntities) {
 					if (entity.Has<Collider, Velocity>()) {
 						var delta = entity.Read<Collider>().WorldPosition - debugInput.MousePosition;
-						var distSqr = FVector2.LengthSqr(delta);
+						var distSqr = Fixed64.FVector2.LengthSqr(delta.To64());
 						var radiusSum = debugInput.Radius + entity.Read<Collider>().Radius;
 
-						if (distSqr < radiusSum * radiusSum) {
+						if (distSqr < (radiusSum * radiusSum).To64()) {
 							entity.Mut<Velocity>().Linear += FVector2.NormalizeSafe(delta) * debugInput.Acceleration * Const.DeltaTime;
 						}
 					}

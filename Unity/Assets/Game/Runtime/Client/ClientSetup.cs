@@ -14,10 +14,12 @@ namespace Game.Client {
 
 			GameWorldSetup.CreateAndInitialize();
 			GameInterpolationSetup.CreateAndInitialize();
+			ViewSynchronizer.Create();
 		}
 
 		public static void Destroy() {
 			if (CLNT.Status != SessionStatus.NotCreated) {
+				ViewSynchronizer.Destroy();
 				GameInterpolationSetup.Destroy();
 				GameWorldSetup.Destroy();
 				CLNT.Destroy();

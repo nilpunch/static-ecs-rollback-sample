@@ -1,4 +1,5 @@
 ﻿using FFS.Libraries.StaticEcs;
+using Fixed;
 using Fixed32;
 using Game.Core;
 using Shenanicode.Rollback;
@@ -10,46 +11,25 @@ namespace Game {
 				W.Query().BatchDelete<W.Multi<ContactPair>>();
 
 				var broadPhase = W.GetResource<BroadPhase>();
+				broadPhase.CollectPairs();
 
-				W.Query().For(ref broadPhase,
-					static (ref BroadPhase bp, W.Entity entityA, in Collider colliderA) => {
-						var nearby = bp.FindNearbyEntities(colliderA.WorldBounds);
-						for (var i = 0; i < nearby.Count; i++) {
-							var entityB = nearby[i];
+				var pairs = broadPhase.Pairs;
+				for (var i = 0; i < pairs.Count; i++) {
+					var (entityA, entityB) = pairs[i];
 
-							if (entityA == entityB || entityA.ID > entityB.ID) {
-								continue;
-							}
+					ref readonly var colliderA = ref entityA.Read<Collider>()!;
+					ref readonly var colliderB = ref entityB.Read<Collider>()!;
 
-							if (HasContact(entityA, entityB)) {
-								continue;
-							}
+					var delta = colliderB.WorldPosition - colliderA.WorldPosition;
+					var distSqr = Fixed64.FVector2.LengthSqr(delta.To64());
+					var radiusSum = colliderA.Radius + colliderB.Radius;
 
-							ref readonly var colliderB = ref entityB.Read<Collider>()!;
-
-							var delta = entityB.Read<Collider>().WorldPosition - colliderA.WorldPosition;
-							var distSqr = FVector2.LengthSqr(delta);
-							var radiusSum = colliderA.Radius + colliderB.Radius;
-
-							if (distSqr < radiusSum * radiusSum) {
-								Resolve(entityA, entityB, colliderA, colliderB, delta, distSqr);
-								AddContact(entityA, entityB);
-							}
-						}
-					});
-			}
-
-			private static bool HasContact(W.Entity a, W.Entity b) {
-				if (!a.Has<W.Multi<ContactPair>>()) {
-					return false;
-				}
-				ref var pairs = ref a.Ref<W.Multi<ContactPair>>();
-				for (var i = 0; i < pairs.Length; i++) {
-					if (pairs[i].Other == b.GID) {
-						return true;
+					if (distSqr < (radiusSum * radiusSum).To64()) {
+						// CollectPairs yields each pair once, so no contact-dedup check is needed.
+						Resolve(entityA, entityB, colliderA, colliderB, delta, distSqr.To32());
+						AddContact(entityA, entityB);
 					}
 				}
-				return false;
 			}
 
 			private static void AddContact(W.Entity a, W.Entity b) {
@@ -90,8 +70,8 @@ namespace Game {
 				// Simple mass/inertia: mass=1, inertia=radius^2/2
 				var invMassA = FP.One;
 				var invMassB = FP.One;
-				var invIA = FP.One / (colA.Radius * colA.Radius / 2.ToFP());
-				var invIB = FP.One / (colB.Radius * colB.Radius / 2.ToFP());
+				var invIA = FP.One / (colA.Radius * colA.Radius / 2);
+				var invIB = FP.One / (colB.Radius * colB.Radius / 2);
 
 				var rAPerpDotN = FVector2.Dot(rAPerp, normal);
 				var rBPerpDotN = FVector2.Dot(rBPerp, normal);

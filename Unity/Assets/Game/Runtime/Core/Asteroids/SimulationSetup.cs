@@ -1,4 +1,5 @@
 using FFS.Libraries.StaticEcs;
+using Fixed;
 using Fixed32;
 using Game.Core;
 using Shenanicode.Rollback;
@@ -11,7 +12,7 @@ namespace Game {
 				Const.DeltaTime = FP.One / S.TickRate;
 				Const.InvDeltaTime = S.TickRate.ToFP();
 
-				W.SetResource(new BroadPhase(256, 512, FVector2.One * 2));
+				W.SetResource(new BroadPhase(512, 512, FVector2.One * 2));
 
 				Systems.Add(new MovementIntegrationSystem());
 				Systems.Add(new ColliderWorldPositionSyncSystem());
@@ -27,15 +28,14 @@ namespace Game {
 					var entity = W.NewEntity<Default>();
 
 					var pos = new FVector2(
-						FP.FromRatio(random.Next(-100, 100), 1),
-						FP.FromRatio(random.Next(-100, 100), 1)
+						FP.FromRatio(random.Next(-400, 400), 1),
+						FP.FromRatio(random.Next(-400, 400), 1)
 					);
 
 					var radius = FP.FromRatio(random.Next(1, 3), 1);
 
 					entity.Set(new PhysicalBody {
 						WorldCoM = pos,
-						WorldOrigin = pos,
 						Rotation = FAngle.FromRadians(FP.FromRatio(random.Next(0, 628), 100))
 					});
 

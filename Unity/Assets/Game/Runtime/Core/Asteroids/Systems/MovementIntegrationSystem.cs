@@ -21,7 +21,6 @@ namespace Game {
 
 					physicalBody.WorldCoM += linearDelta;
 					physicalBody.Rotation += angularDelta;
-					physicalBody.WorldOrigin = physicalBody.WorldCoM + physicalBody.Rotation.Counterclockwise * physicalBody.OriginOffset;
 				});
 			}
 		}

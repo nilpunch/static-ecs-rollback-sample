@@ -6,6 +6,7 @@ namespace Game {
 		public class GameUpdateRoot : IUpdateRoot {
 			public void Update(int tick) {
 				Systems.Update();
+				W.Tick();
 			}
 		}
 	}

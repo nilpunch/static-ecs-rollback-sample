@@ -7,12 +7,10 @@ namespace Game.Application {
 			ResourceConfigUtils.SetResourceConfigs<AppWorldType>();
 
 			App.Set(new AppServerConnection());
-			App.Set(new ViewSynchronizer());
 		}
 
 		public static void Dispose() {
 			App.Get<AppServerConnection>().Connection.Close();
-			App.Get<ViewSynchronizer>().Dispose();
 		}
 	}
 }

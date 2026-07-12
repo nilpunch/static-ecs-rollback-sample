@@ -12,7 +12,7 @@ namespace Game.Application {
 				return;
 			}
 
-			var viewSynchronizer = App.Get<ViewSynchronizer>();
+			var viewSynchronizer = ViewSynchronizer.Instance;
 			viewSynchronizer.SynchronizeFreeEntities();
 			viewSynchronizer.SynchronizeBroadPhaseEntities(GetCameraBounds(Camera.main));
 
@@ -20,7 +20,7 @@ namespace Game.Application {
 		}
 
 		private void LateUpdate() {
-			App.Get<ViewSynchronizer>().CompleteTransformSync();
+			ViewSynchronizer.Instance.CompleteTransformSync();
 		}
 
 		public static FAABB2 GetCameraBounds(Camera camera) {

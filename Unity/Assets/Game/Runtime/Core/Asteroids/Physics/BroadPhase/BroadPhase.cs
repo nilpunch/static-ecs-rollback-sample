@@ -14,6 +14,10 @@ namespace Game {
 
 			private readonly List<W.Entity> _queryBuffer = new();
 
+			// Candidate collision pairs collected in a single pass over non-empty cells.
+			public readonly List<(W.Entity A, W.Entity B)> Pairs = new();
+			private readonly List<(W.Entity Entity, CellIndex Lo)> _cellScratch = new();
+
 			public struct Node {
 				// Next node in the cell chain, -1 if tail. While free: next free node.
 				public int Next;
@@ -29,15 +33,18 @@ namespace Game {
 			public int[] Heads;
 			public Node[] Nodes;
 
+			// Dense list of non-empty cell flat indices, with an inverse map for O(1)
+			// removal (sparse set). Lets collision detection walk only occupied cells
+			// instead of scanning the whole Width*Height grid.
+			public int[] ActiveCells;
+			public int ActiveCellCount;
+			private int[] _cellSlot;
+
 			public int UsedNodesCount;
 			public int NextFreeNodeIndex;
 			public uint QueryId;
 
 			public BroadPhase(int width, int height, FVector2 cellSize) {
-				if (!MathUtils.IsPowerOfTwo(width * height)) {
-					throw new ArgumentException("width * height must be power of 2");
-				}
-
 				Width = width;
 				Height = height;
 				CellSize = cellSize;
@@ -53,6 +60,11 @@ namespace Game {
 				Nodes = new Node[InitialCapacity];
 				UsedNodesCount = 0;
 				NextFreeNodeIndex = -1;
+
+				// At most every cell can be non-empty, so a fixed-size backing never resizes.
+				ActiveCells = new int[Width * Height];
+				_cellSlot = new int[Width * Height];
+				ActiveCellCount = 0;
 			}
 
 			public Guid? Guid() => new Guid("559781fb614f49408cfc7cd5be71dc4e");
@@ -64,6 +76,11 @@ namespace Game {
 				writer.WriteInt(UsedNodesCount);
 				writer.WriteInt(NextFreeNodeIndex);
 				writer.WriteUint(QueryId);
+
+				// Only the dense active list is serialized; _cellSlot is its inverse and
+				// is rebuilt on Read, so it never bloats the per-frame snapshot.
+				writer.WriteInt(ActiveCellCount);
+				writer.WriteArrayUnmanaged(ActiveCells, 0, ActiveCellCount);
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -73,6 +90,16 @@ namespace Game {
 				UsedNodesCount = reader.ReadInt();
 				NextFreeNodeIndex = reader.ReadInt();
 				QueryId = reader.ReadUint();
+
+				ActiveCellCount = reader.ReadInt();
+				reader.ReadArrayUnmanaged(ref ActiveCells);
+
+				// Reconstruct the inverse map for the restored active cells (O(active),
+				// not O(grid)). Slots of inactive cells are never read, so stale values
+				// left behind are harmless.
+				for (var i = 0; i < ActiveCellCount; i++) {
+					_cellSlot[ActiveCells[i]] = i;
+				}
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,13 +124,10 @@ namespace Game {
 							var node = nodes[nodeIndex];
 							var entity = node.Entity;
 
-							// Only touch the component of a live entity.
-							if (entity.IsNotDestroyed) {
-								ref var info = ref entity.Mut<BroadPhaseInfo>()!;
-								if (info.QueryId != queryId) {
-									info.QueryId = queryId;
-									_queryBuffer.Add(entity);
-								}
+							ref var info = ref W.Components<BroadPhaseInfo>.Instance.Ref(entity)!;
+							if (info.QueryId != queryId) {
+								info.QueryId = queryId;
+								_queryBuffer.Add(entity);
 							}
 
 							nodeIndex = node.Next;
@@ -112,6 +136,69 @@ namespace Game {
 				}
 
 				return _queryBuffer;
+			}
+
+			/// <summary>
+			/// Collects every candidate collision pair in a single sweep over non-empty
+			/// cells. Each unordered pair is emitted exactly once (ordered A.ID &lt; B.ID),
+			/// so callers need no further deduplication.
+			/// </summary>
+			public void CollectPairs() {
+				Pairs.Clear();
+
+				var nodes = Nodes;
+				var heads = Heads;
+				var width = Width;
+				var scratch = _cellScratch;
+
+				for (var c = 0; c < ActiveCellCount; c++) {
+					var cell = ActiveCells[c];
+					var cellX = cell % width;
+					var cellY = cell / width;
+
+					// Gather the cell's entities once (one component fetch each) so the
+					// O(k^2) pair loop below works on cached local data.
+					scratch.Clear();
+					var nodeIndex = heads[cell];
+					while (nodeIndex != -1) {
+						var entity = nodes[nodeIndex].Entity;
+						ref var info = ref W.Components<BroadPhaseInfo>.Instance.Ref(entity)!;
+						scratch.Add((entity, info.LowerBound));
+						nodeIndex = nodes[nodeIndex].Next;
+					}
+
+					var count = scratch.Count;
+					for (var i = 0; i < count; i++) {
+						var (entityA, loA) = scratch[i];
+						for (var j = i + 1; j < count; j++) {
+							var (entityB, loB) = scratch[j];
+
+							// Two entities that overlap always share the cell at the min
+							// corner of their overlap. Emit only from that owner cell so a
+							// pair spanning several shared cells is not emitted repeatedly.
+							if (cellX != MathUtils.Max(loA.X, loB.X) || cellY != MathUtils.Max(loA.Y, loB.Y)) {
+								continue;
+							}
+
+							Pairs.Add(entityA.ID < entityB.ID ? (entityA, entityB) : (entityB, entityA));
+						}
+					}
+				}
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private void MarkCellActive(int cell) {
+				_cellSlot[cell] = ActiveCellCount;
+				ActiveCells[ActiveCellCount++] = cell;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private void MarkCellInactive(int cell) {
+				// Swap-remove: move the last active cell into the freed slot.
+				var slot = _cellSlot[cell];
+				var last = ActiveCells[--ActiveCellCount];
+				ActiveCells[slot] = last;
+				_cellSlot[last] = slot;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -125,7 +212,11 @@ namespace Game {
 				var clampedX = MathUtils.Min(Width - 1, MathUtils.Max(0, x));
 				var clampedY = MathUtils.Min(Height - 1, MathUtils.Max(0, y));
 
-				return new CellIndex(clampedX, clampedY);
+				CellIndex cellIndex = default;
+				cellIndex.X = clampedX;
+				cellIndex.Y = clampedY;
+
+				return cellIndex;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -137,13 +228,21 @@ namespace Game {
 			public void Insert(W.Entity entity, ref BroadPhaseInfo info, FAABB2 bounds) {
 				var minIndex = CellIndex(bounds.Min);
 				var maxIndex = CellIndex(bounds.Max);
+				Insert(entity, ref info, minIndex, maxIndex);
+			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private void Insert(W.Entity entity, ref BroadPhaseInfo info, CellIndex minIndex, CellIndex maxIndex) {
 				info.LowerBound = minIndex;
 				info.UpperBound = maxIndex;
 
 				for (var x = minIndex.X; x <= maxIndex.X; x++) {
 					for (var y = minIndex.Y; y <= maxIndex.Y; y++) {
 						var cell = FlatIndex(x, y);
+						if (Heads[cell] == -1) {
+							MarkCellActive(cell);
+						}
+
 						var nodeIndex = AllocateNode();
 
 						Nodes[nodeIndex] = new Node { Entity = entity, Next = Heads[cell] };
@@ -153,7 +252,7 @@ namespace Game {
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void Remove(W.Entity entity, BroadPhaseInfo info) {
+			public void Remove(W.Entity entity, in BroadPhaseInfo info) {
 				var min = info.LowerBound;
 				var max = info.UpperBound;
 
@@ -183,23 +282,27 @@ namespace Game {
 							prevIndex = nodeIndex;
 							nodeIndex = node.Next;
 						}
+
+						if (Heads[cell] == -1) {
+							MarkCellInactive(cell);
+						}
 					}
 				}
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			public void UpdateInfo(W.Entity entity, ref BroadPhaseInfo info, FAABB2 bounds) {
-				if (ColliderHasMovedCells(info, bounds)) {
+				var minIndex = CellIndex(bounds.Min);
+				var maxIndex = CellIndex(bounds.Max);
+
+				if (ColliderHasMovedCells(info, minIndex, maxIndex)) {
 					Remove(entity, info);
-					Insert(entity, ref info, bounds);
+					Insert(entity, ref info, minIndex, maxIndex);
 				}
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			private bool ColliderHasMovedCells(BroadPhaseInfo info, FAABB2 bounds) {
-				var minIndex = CellIndex(bounds.Min);
-				var maxIndex = CellIndex(bounds.Max);
-
+			private bool ColliderHasMovedCells(in BroadPhaseInfo info, CellIndex minIndex, CellIndex maxIndex) {
 				return info.LowerBound != minIndex || info.UpperBound != maxIndex;
 			}
 

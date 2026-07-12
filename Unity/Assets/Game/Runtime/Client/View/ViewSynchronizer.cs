@@ -11,9 +11,12 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
 using static Game.Core<Game.Client.ClientWorld>;
+using Object = UnityEngine.Object;
 
 namespace Game.Client {
-	public class ViewSynchronizer : IResource {
+	public class ViewSynchronizer {
+		public static ViewSynchronizer Instance { get; private set; }
+
 		public readonly List<EntityView> ActiveViews = new();
 		public TransformAccessArray Transforms = new(64);
 
@@ -46,7 +49,18 @@ namespace Game.Client {
 			public SyncType SyncType;
 		}
 
-		// ── Sync ──────────────────────────────────────────────────────────────────
+		public static void Create() {
+			if (Instance == null) {
+				Instance = new ViewSynchronizer();
+			}
+		}
+
+		public static void Destroy() {
+			if (Instance != null) {
+				Instance.Dispose();
+				Instance = null;
+			}
+		}
 
 		public void SynchronizeAllDebug() {
 			_freeSyncId++;
@@ -151,6 +165,7 @@ namespace Game.Client {
 			if (!_pool.ContainsVariant(asset)) {
 				var prefab = ViewDataBase.Instance.GetViewPrefab(asset);
 				var poolRoot = new GameObject(prefab.name + " Pool").transform;
+				Object.DontDestroyOnLoad(poolRoot.gameObject);
 				_pool.AddVariant(asset, new Pool<EntityView>(new PrefabFactory<EntityView>(prefab, poolRoot)));
 
 				if (_poolRoots.Length <= asset.Id) {
@@ -299,6 +314,12 @@ namespace Game.Client {
 			}
 
 			DisposeArrays();
+
+			for (int i = 0; i < _poolRoots.Length; i++) {
+				if (_poolRoots[i] != null) {
+					Object.Destroy(_poolRoots[i]);
+				}
+			}
 
 			_pool = new VariantPool<ViewAsset, EntityView>();
 			Array.Fill(_poolRoots, null);
