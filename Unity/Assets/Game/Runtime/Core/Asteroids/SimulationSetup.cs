@@ -1,5 +1,4 @@
 using FFS.Libraries.StaticEcs;
-using Fixed;
 using Fixed32;
 using Game.Core;
 using Shenanicode.Rollback;
@@ -15,13 +14,15 @@ namespace Game {
 				new FVector2(GridWidth.ToFP(), GridHeight.ToFP()) * CellSize;
 
 			public static void Register() {
-				Const.DeltaTime = FP.One / S.TickRate;
-				Const.InvDeltaTime = S.TickRate.ToFP();
+				Const.DeltaTime = FP.One / Const.TickRate;
+				Const.InvDeltaTime = Const.TickRate.ToFP();
 
 				W.SetResource(new BroadPhase(GridWidth, GridHeight, CellSize));
+				W.SetResource(new PlayerMapping());
 
 				Const.SetWorldSize(WorldSize);
 
+				Systems.Add(new PlayerCreationSystem());
 				Systems.Add(new MovementIntegrationSystem());
 				Systems.Add(new ColliderWorldPositionSyncSystem());
 				Systems.Add(new BroadPhaseSystem());
@@ -60,10 +61,7 @@ namespace Game {
 						WorldPosition = pos
 					});
 
-					entity.Set(new Bounds {
-						WorldPosition = pos,
-						Extents = new FVector2(radius, radius) + Const.BoundsPadding
-					});
+					entity.Set(Bounds.New(pos, FVector2.One * radius));
 
 					entity.Set(new ViewAsset((short)ViewAssetTypes.Asteroid));
 				}

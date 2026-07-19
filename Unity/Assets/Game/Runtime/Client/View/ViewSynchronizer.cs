@@ -30,20 +30,21 @@ namespace Game.Client {
 		private VariantPool<ViewAsset, EntityView> _pool = new();
 		private Transform[] _poolRoots = new Transform[4];
 
-		private readonly Dictionary<EntityGID, Tracked> _views = new();
+		public readonly Dictionary<EntityGID, Tracked> Views = new();
 		private readonly List<EntityGID> _stale = new();
 		private int _freeSyncId;
 		private int _broadPhaseSyncId;
+		public FVector2 CameraPosition;
 
 		private JobHandle _jobHandle;
 		private bool _jobScheduled;
 
-		private enum SyncType : byte {
+		public enum SyncType : byte {
 			Free,
 			BroadPhase
 		}
 
-		private struct Tracked {
+		public struct Tracked {
 			public EntityView View;
 			public int Index;
 			public int SyncId;
@@ -88,9 +89,11 @@ namespace Game.Client {
 			Sweep(_freeSyncId, SyncType.Free);
 		}
 
-		public void SynchronizeBroadPhaseEntities(FAABB2 cameraBounds) {
+		public void SynchronizeBroadPhaseEntities(FVector2 cameraPosition, FVector2 cameraExtents) {
 			_broadPhaseSyncId++;
+			CameraPosition = cameraPosition;
 
+			var cameraBounds = FAABB2.FromCenterAndExtents(CameraPosition, cameraExtents);
 			foreach (var entity in W.GetResource<BroadPhase>().FindNearbyEntities(cameraBounds)) {
 				if (entity.Has<ViewAsset>()) {
 					Actualize(entity.GID, entity.Read<ViewAsset>(), _broadPhaseSyncId, SyncType.BroadPhase);
@@ -105,7 +108,7 @@ namespace Game.Client {
 				return;
 			}
 
-			if (_views.TryGetValue(gid, out var tracked)) {
+			if (Views.TryGetValue(gid, out var tracked)) {
 				if (tracked.Asset != asset) {
 					DestroyView(tracked.View);
 					tracked.View = CreateView(asset, gid);
@@ -124,11 +127,11 @@ namespace Game.Client {
 
 			tracked.SyncId = syncId;
 			tracked.SyncType = syncType;
-			_views[gid] = tracked;
+			Views[gid] = tracked;
 		}
 
 		private void Sweep(int syncId, SyncType syncType) {
-			foreach (var pair in _views) {
+			foreach (var pair in Views) {
 				if (pair.Value.SyncType == syncType && pair.Value.SyncId != syncId) {
 					_stale.Add(pair.Key);
 				}
@@ -142,7 +145,7 @@ namespace Game.Client {
 		}
 
 		private void RemoveView(EntityGID gid) {
-			var tracked = _views[gid];
+			var tracked = Views[gid];
 			DestroyView(tracked.View);
 
 			var last = ActiveViews.Count - 1;
@@ -151,14 +154,14 @@ namespace Game.Client {
 				var moved = ActiveViews[last];
 				ActiveViews[index] = moved;
 
-				var movedTracked = _views[moved.Entity];
+				var movedTracked = Views[moved.Entity];
 				movedTracked.Index = index;
-				_views[moved.Entity] = movedTracked;
+				Views[moved.Entity] = movedTracked;
 			}
 
 			ActiveViews.RemoveAt(last);
 			Transforms.RemoveAtSwapBack(index);
-			_views.Remove(gid);
+			Views.Remove(gid);
 		}
 
 		private EntityView CreateView(ViewAsset asset, EntityGID gid) {
@@ -178,9 +181,8 @@ namespace Game.Client {
 			var view = _pool.Get(asset);
 			view.AssignEntity(gid);
 
-			// Snap onto the entity so the max-speed smoothing starts from the correct pose, not its last pooled one.
 			ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
-			var spawn = body.WorldOrigin.FromFP();
+			var spawn = Core.Const.WrapPosition(body.WorldOrigin - CameraPosition).FromFP();
 			view.RootTransform.SetPositionAndRotation(
 				new Vector3(spawn.x, spawn.y, 0f),
 				Quaternion.Euler(0f, 0f, body.Rotation.Radians.ToFloat() * Mathf.Rad2Deg));
@@ -234,14 +236,14 @@ namespace Game.Client {
 				MaxAngularSpeed[i] = view.AngleCorrectionSpeed * Mathf.Deg2Rad;
 
 				ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
-				var toPos = body.WorldOrigin.FromFP();
+				var toPos = Core.Const.WrapPosition(body.WorldOrigin - CameraPosition).FromFP();
 				var toAngle = body.Rotation.Radians.ToFloat();
 
 				Vector2 fromPos;
 				float fromAngle;
 				if (useInterpolation && gid.TryUnpack<GameWorldPrev>(out var entityPrev)) {
 					ref readonly var bodyPrev = ref entityPrev.Read<PhysicalBody>()!;
-					fromPos = bodyPrev.WorldOrigin.FromFP();
+					fromPos = Core.Const.WrapPosition(bodyPrev.WorldOrigin - CameraPosition).FromFP();
 					fromAngle = bodyPrev.Rotation.Radians.ToFloat();
 				}
 				else {
@@ -299,23 +301,25 @@ namespace Game.Client {
 				var targetY = a.y + toDeltaY * Alpha;
 
 				var current = transform.position;
-				var maxStep = MaxSpeed[index] * DeltaTime;
+				// var maxStep = MaxSpeed[index] * DeltaTime;
 				// Shortest signed distance from the drawn pose to the target, so crossing the
 				// seam is a small step rather than a full-world pose correction.
 				var dx = Wrap(targetX - current.x, WorldSize.x, WorldHalf.x);
 				var dy = Wrap(targetY - current.y, WorldSize.y, WorldHalf.y);
-				var distanceSq = dx * dx + dy * dy;
+				// var distanceSq = dx * dx + dy * dy;
 
 				float x, y;
-				if (distanceSq <= maxStep * maxStep || maxStep <= 0f) {
-					x = current.x + dx;
-					y = current.y + dy;
-				}
-				else {
-					var scale = maxStep / math.sqrt(distanceSq);
-					x = current.x + dx * scale;
-					y = current.y + dy * scale;
-				}
+				x = current.x + dx;
+				y = current.y + dy;
+				// if (distanceSq <= maxStep * maxStep || maxStep <= 0f) {
+				// 	x = current.x + dx;
+				// 	y = current.y + dy;
+				// }
+				// else {
+				// 	var scale = maxStep / math.sqrt(distanceSq);
+				// 	x = current.x + dx * scale;
+				// 	y = current.y + dy * scale;
+				// }
 
 				// Fold the drawn position back into [-half, half) so it stays on the torus.
 				x = Wrap(x, WorldSize.x, WorldHalf.x);
@@ -372,7 +376,7 @@ namespace Game.Client {
 			}
 
 			ActiveViews.Clear();
-			_views.Clear();
+			Views.Clear();
 			_stale.Clear();
 
 			while (Transforms.length > 0) {

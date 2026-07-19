@@ -12,5 +12,12 @@ namespace Game.Core
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			get => FAABB2.FromCenterAndExtents(WorldPosition, Extents);
 		}
+
+		public static Bounds New(FVector2 worldPosition, FVector2 extents) {
+			return new Bounds {
+				WorldPosition = worldPosition,
+				Extents = extents + Const.BoundsPadding
+			};
+		}
 	}
 }

@@ -37,7 +37,7 @@ namespace Game.Application
 					new Vector3(Mouse.current.position.value.x, Mouse.current.position.value.y, 0f)).ToFP().ToXY();
 
 				var debugInput = new DebugInput() {
-					MousePosition = mousePosition,
+					MousePosition = mousePosition + ViewSynchronizer.Instance.CameraPosition,
 					Acceleration = _accelration.ToFP(),
 					Radius = _radius.ToFP(),
 				};

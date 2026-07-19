@@ -1,33 +1,58 @@
-using System;
+﻿using FFS.Libraries.StaticEcs;
 using Fixed32;
 using Game.Client;
+using Game.Core;
 using UnityEngine;
 
 namespace Game.Application {
 	public class ClientUpdater : MonoBehaviour {
-		private void Update() {
-			CLNT.Update(Time.realtimeSinceStartup);
+		[SerializeField] private bool _isJym;
+		[SerializeField] private bool _viewCulling = true;
+		[SerializeField] private bool _interpolate = true;
+		[SerializeField] private Vector2 _virtualCameraPosition;
 
-			if (!CLNT.Connection.IsConnected) {
-				App.Get<StateMachine>().Enter<MainMenu>();
+		private float CurrentTime => _isJym ? Time.time : Time.realtimeSinceStartup;
+
+		private void Update() {
+			CLNT.Update(CurrentTime);
+
+			if (!CLNT.Synced) {
 				return;
 			}
 
-			var viewSynchronizer = ViewSynchronizer.Instance;
-			viewSynchronizer.SynchronizeFreeEntities();
-			viewSynchronizer.SynchronizeBroadPhaseEntities(GetCameraBounds(Camera.main));
+			var interpolation = CLNT.CalculateInterpolation(CurrentTime);
 
-			viewSynchronizer.ScheduleTransformSync(CLNT.CalculateInterpolation(Time.realtimeSinceStartup));
+			var prevPlayerPosition = GetPlayerPosition<GameWorldPrev>().GetValueOrDefault(_virtualCameraPosition);
+			var playerPosition = GetPlayerPosition<ClientWorld>().GetValueOrDefault(_virtualCameraPosition);
+
+			_virtualCameraPosition = Vector2.Lerp(prevPlayerPosition, playerPosition, interpolation);
+
+			var viewSynchronizer = ViewSynchronizer.Instance;
+			if (_viewCulling) {
+				viewSynchronizer.SynchronizeFreeEntities();
+				viewSynchronizer.SynchronizeBroadPhaseEntities(_virtualCameraPosition.ToFP(), GetCameraExtents(Camera.main));
+			}
+			else {
+				viewSynchronizer.SynchronizeAllDebug();
+			}
+
+			viewSynchronizer.ScheduleTransformSync(interpolation, _interpolate);
 		}
 
 		private void LateUpdate() {
 			ViewSynchronizer.Instance.CompleteTransformSync();
 		}
 
-		public static FAABB2 GetCameraBounds(Camera camera) {
-			var extents = new Vector2(camera.orthographicSize * camera.aspect, camera.orthographicSize);
-			var center = (Vector2)camera.transform.position;
-			return FAABB2.FromCenterAndExtents(center.ToFP(), extents.ToFP());
+		private static FVector2 GetCameraExtents(Camera camera) {
+			return new Vector2(camera.orthographicSize * camera.aspect, camera.orthographicSize).ToFP();
+		}
+
+		private static Vector2? GetPlayerPosition<TWorld>() where TWorld : struct, IWorldType {
+			var playerMapping = World<TWorld>.GetResource<PlayerMapping>();
+			if (playerMapping.EntityByChannel.TryGetValue(CLNT.Channel, out var entity)) {
+				return entity.Unpack<TWorld>().Read<PhysicalBody>()!.WorldOrigin.FromFP();
+			}
+			return null;
 		}
 	}
 }

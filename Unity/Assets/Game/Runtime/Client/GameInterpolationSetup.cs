@@ -1,15 +1,9 @@
-﻿using Game.Core;
-
-namespace Game.Client {
-	using static Core<ClientWorld>;
-
+﻿namespace Game.Client {
 	public static class GameInterpolationSetup {
 		public static void CreateAndInitialize() {
-			WP.Create(GameWorldSetup.WorldConfig);
-			WP.Types().RegisterAll(typeof(CoreRoot).Assembly);
-			WP.Initialize();
+			Core<GameWorldPrev>.GameWorldSetup.CreateAndInitialize();
 
-			S.SetInterpolationReceiver(new GameInterpolationReceiver());
+			Core<ClientWorld>.S.SetInterpolationReceiver(new GameInterpolationReceiver());
 		}
 
 		public static void Destroy() {

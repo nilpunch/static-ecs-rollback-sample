@@ -5,6 +5,8 @@ using Shenanicode.Rollback;
 
 namespace Game.Core {
 	public static class Const {
+		public static int TickRate = 30;
+
 		public static FP DeltaTime;
 		public static FP InvDeltaTime;
 

@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.Application::Game.Application.ViewDataBase
   <ViewPrefabs>k__BackingField:
   - {fileID: 4855391819345098117, guid: 0d575cddad1534b9790389c7bb4b9adf, type: 3}
+  - {fileID: 4855391819345098117, guid: b27e91ff275524dbe87a2203b328540c, type: 3}

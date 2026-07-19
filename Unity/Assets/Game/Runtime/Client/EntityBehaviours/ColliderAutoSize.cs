@@ -5,7 +5,7 @@ using UnityEngine;
 using Collider = Game.Core.Collider;
 
 namespace Game.Client {
-	public class AsteroidSize : EntityBehaviour {
+	public class ColliderAutoSize : EntityBehaviour {
 		[SerializeField] private SpriteRenderer _sprite;
 		[SerializeField] private float _originalSpriteRadius = 0.32f;
 

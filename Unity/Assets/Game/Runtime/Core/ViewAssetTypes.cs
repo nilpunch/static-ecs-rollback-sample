@@ -1,6 +1,7 @@
 namespace Game
 {
 	public enum ViewAssetTypes : short {
-		Asteroid
+		Asteroid,
+		Ship,
 	}
 }
