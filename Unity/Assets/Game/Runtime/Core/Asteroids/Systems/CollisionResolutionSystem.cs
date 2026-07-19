@@ -3,6 +3,7 @@ using Fixed;
 using Fixed32;
 using Game.Core;
 using Shenanicode.Rollback;
+using Const = Game.Core.Const;
 
 namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
@@ -20,7 +21,9 @@ namespace Game {
 					ref readonly var colliderA = ref entityA.Read<Collider>()!;
 					ref readonly var colliderB = ref entityB.Read<Collider>()!;
 
-					var delta = colliderB.WorldPosition - colliderA.WorldPosition;
+					// Minimum-image displacement so a pair straddling the seam measures the
+					// short way across the torus, matching the wrapped broad phase.
+					var delta = Const.MinImageDelta(colliderB.WorldPosition - colliderA.WorldPosition);
 					var distSqr = Fixed64.FVector2.LengthSqr(delta.To64());
 					var radiusSum = colliderA.Radius + colliderB.Radius;
 

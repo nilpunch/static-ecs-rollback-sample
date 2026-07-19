@@ -18,7 +18,7 @@ namespace Game {
 				var nearbyEntities = W.GetResource<BroadPhase>().FindNearbyEntities(FAABB2.FromCenterAndExtents(debugInput.MousePosition, debugInput.Radius * FVector2.One));
 				foreach (var entity in nearbyEntities) {
 					if (entity.Has<Collider, Velocity>()) {
-						var delta = entity.Read<Collider>().WorldPosition - debugInput.MousePosition;
+						var delta = Const.MinImageDelta(entity.Read<Collider>().WorldPosition - debugInput.MousePosition);
 						var distSqr = Fixed64.FVector2.LengthSqr(delta.To64());
 						var radiusSum = debugInput.Radius + entity.Read<Collider>().Radius;
 

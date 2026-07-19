@@ -10,21 +10,21 @@ namespace Game {
 
 				// Add new.
 				W.Query<None<DestroySelf, BroadPhaseInfo>>().For(ref broadPhase,
-					static (ref BroadPhase broadPhase, W.Entity entity, in Collider collider) => {
+					static (ref BroadPhase broadPhase, W.Entity entity, in Bounds bounds) => {
 						ref var broadPhaseInfo = ref entity.Add<BroadPhaseInfo>();
-						broadPhase.Insert(entity, ref broadPhaseInfo, collider.WorldBounds);
+						broadPhase.Insert(entity, ref broadPhaseInfo, bounds.AABB);
 					});
 
 				// Remove dying.
-				W.Query<Or<AllOnlyDisabled<Collider>, All<DestroySelf>>>().For(ref broadPhase,
+				W.Query<Or<AllOnlyDisabled<Bounds>, All<DestroySelf>>>().For(ref broadPhase,
 					static (ref BroadPhase broadPhase, W.Entity entity, in BroadPhaseInfo info) => {
 						broadPhase.Remove(entity, info);
 					});
 
 				// Update existing.
-				W.Query<AllChanged<Collider>>().For(ref broadPhase,
-					static (ref BroadPhase broadPhase, W.Entity entity, ref BroadPhaseInfo info, in Collider collider) => {
-						broadPhase.UpdateInfo(entity, ref info, collider.WorldBounds);
+				W.Query<AllChanged<Bounds>>().For(ref broadPhase,
+					static (ref BroadPhase broadPhase, W.Entity entity, ref BroadPhaseInfo info, in Bounds bounds) => {
+						broadPhase.UpdateInfo(entity, ref info, bounds.AABB);
 					});
 			}
 		}

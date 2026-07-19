@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 837978567153830106}
   - component: {fileID: 4855391819345098117}
   - component: {fileID: 2414420270410179706}
+  - component: {fileID: 5492257924589642350}
   m_Layer: 0
   m_Name: Asteroid
   m_TagString: Untagged
@@ -139,7 +140,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.Application::Game.Application.EntityView
   _entityBehaviours:
   - {fileID: 2414420270410179706}
+  - {fileID: 5492257924589642350}
   <RootTransform>k__BackingField: {fileID: 837978567153830106}
+  <PoseCorrectionSpeed>k__BackingField: 10
+  <AngleCorrectionSpeed>k__BackingField: 180
 --- !u!114 &2414420270410179706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -154,3 +158,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: Game.Client::Game.Client.AsteroidSize
   _sprite: {fileID: 5006927824455654262}
   _originalSpriteRadius: 0.32
+--- !u!114 &5492257924589642350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8258646266334955684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 85ee1b87a69048c69882486b81bc514f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Client::Game.Client.AutoCorrectMaxSpeed
+  _entityView: {fileID: 4855391819345098117}

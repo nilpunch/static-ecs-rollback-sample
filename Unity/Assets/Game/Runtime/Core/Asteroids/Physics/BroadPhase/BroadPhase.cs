@@ -14,9 +14,8 @@ namespace Game {
 
 			private readonly List<W.Entity> _queryBuffer = new();
 
-			// Candidate collision pairs collected in a single pass over non-empty cells.
 			public readonly List<(W.Entity A, W.Entity B)> Pairs = new();
-			private readonly List<(W.Entity Entity, CellIndex Lo)> _cellScratch = new();
+			private readonly List<(W.Entity Entity, CellIndex Lo, CellIndex Hi)> _cellScratch = new();
 
 			public struct Node {
 				// Next node in the cell chain, -1 if tail. While free: next free node.
@@ -26,6 +25,8 @@ namespace Game {
 
 			public readonly int Width;
 			public readonly int Height;
+			public readonly int WidthMask;
+			public readonly int HeightMask;
 			public readonly FVector2 CellSize;
 			public readonly FVector2 InvertedCellSize;
 			public readonly FVector2 OriginOffset;
@@ -33,9 +34,6 @@ namespace Game {
 			public int[] Heads;
 			public Node[] Nodes;
 
-			// Dense list of non-empty cell flat indices, with an inverse map for O(1)
-			// removal (sparse set). Lets collision detection walk only occupied cells
-			// instead of scanning the whole Width*Height grid.
 			public int[] ActiveCells;
 			public int ActiveCellCount;
 			private int[] _cellSlot;
@@ -45,8 +43,18 @@ namespace Game {
 			public uint QueryId;
 
 			public BroadPhase(int width, int height, FVector2 cellSize) {
+				if (!MathUtils.IsPowerOfTwo(width)) {
+					throw new ArgumentException("World width must be a power of two for bit-mask wrapping.");
+				}
+
+				if (!MathUtils.IsPowerOfTwo(height)) {
+					throw new ArgumentException("World height must be a power of two for bit-mask wrapping.");
+				}
+
 				Width = width;
 				Height = height;
+				WidthMask = width - 1;
+				HeightMask = height - 1;
 				CellSize = cellSize;
 
 				InvertedCellSize = FVector2.One / cellSize;
@@ -77,8 +85,6 @@ namespace Game {
 				writer.WriteInt(NextFreeNodeIndex);
 				writer.WriteUint(QueryId);
 
-				// Only the dense active list is serialized; _cellSlot is its inverse and
-				// is rebuilt on Read, so it never bloats the per-frame snapshot.
 				writer.WriteInt(ActiveCellCount);
 				writer.WriteArrayUnmanaged(ActiveCells, 0, ActiveCellCount);
 			}
@@ -94,9 +100,6 @@ namespace Game {
 				ActiveCellCount = reader.ReadInt();
 				reader.ReadArrayUnmanaged(ref ActiveCells);
 
-				// Reconstruct the inverse map for the restored active cells (O(active),
-				// not O(grid)). Slots of inactive cells are never read, so stale values
-				// left behind are harmless.
 				for (var i = 0; i < ActiveCellCount; i++) {
 					_cellSlot[ActiveCells[i]] = i;
 				}
@@ -106,18 +109,27 @@ namespace Game {
 			public List<W.Entity> FindNearbyEntities(FAABB2 bounds) {
 				_queryBuffer.Clear();
 
-				// CellIndex already clamps into [0,Width) x [0,Height).
-				var minIndex = CellIndex(bounds.Min);
-				var maxIndex = CellIndex(bounds.Max);
-
 				MathUtils.IncrementWrapTo1(ref QueryId);
 				var queryId = QueryId;
 
 				var heads = Heads;
 				var nodes = Nodes;
 
-				for (var x = minIndex.X; x <= maxIndex.X; x++) {
-					for (var y = minIndex.Y; y <= maxIndex.Y; y++) {
+				var minCellX = FP.FloorToInt((bounds.Min.X + OriginOffset.X) * InvertedCellSize.X);
+				var minCellY = FP.FloorToInt((bounds.Min.Y + OriginOffset.Y) * InvertedCellSize.Y);
+				var maxCellX = FP.FloorToInt((bounds.Max.X + OriginOffset.X) * InvertedCellSize.X);
+				var maxCellY = FP.FloorToInt((bounds.Max.Y + OriginOffset.Y) * InvertedCellSize.Y);
+
+				var spanX = MathUtils.Min(maxCellX - minCellX + 1, Width);
+				var spanY = MathUtils.Min(maxCellY - minCellY + 1, Height);
+
+				var startX = minCellX & WidthMask;
+				var startY = minCellY & HeightMask;
+
+				var x = startX;
+				for (var ix = 0; ix < spanX; ix++, x = (x + 1) & WidthMask) {
+					var y = startY;
+					for (var iy = 0; iy < spanY; iy++, y = (y + 1) & HeightMask) {
 						var nodeIndex = heads[FlatIndex(x, y)];
 
 						while (nodeIndex != -1) {
@@ -163,20 +175,18 @@ namespace Game {
 					while (nodeIndex != -1) {
 						var entity = nodes[nodeIndex].Entity;
 						ref var info = ref W.Components<BroadPhaseInfo>.Instance.Ref(entity)!;
-						scratch.Add((entity, info.LowerBound));
+						scratch.Add((entity, info.LowerBound, info.UpperBound));
 						nodeIndex = nodes[nodeIndex].Next;
 					}
 
 					var count = scratch.Count;
 					for (var i = 0; i < count; i++) {
-						var (entityA, loA) = scratch[i];
+						var (entityA, loA, hiA) = scratch[i];
 						for (var j = i + 1; j < count; j++) {
-							var (entityB, loB) = scratch[j];
+							var (entityB, loB, _) = scratch[j];
 
-							// Two entities that overlap always share the cell at the min
-							// corner of their overlap. Emit only from that owner cell so a
-							// pair spanning several shared cells is not emitted repeatedly.
-							if (cellX != MathUtils.Max(loA.X, loB.X) || cellY != MathUtils.Max(loA.Y, loB.Y)) {
+							if (cellX != OverlapStart(loA.X, hiA.X, loB.X, WidthMask) ||
+								cellY != OverlapStart(loA.Y, hiA.Y, loB.Y, HeightMask)) {
 								continue;
 							}
 
@@ -206,15 +216,12 @@ namespace Game {
 				var shiftedX = position.X + OriginOffset.X;
 				var shiftedY = position.Y + OriginOffset.Y;
 
-				var x = FP.FloorToInt(shiftedX * InvertedCellSize.X);
-				var y = FP.FloorToInt(shiftedY * InvertedCellSize.Y);
-
-				var clampedX = MathUtils.Min(Width - 1, MathUtils.Max(0, x));
-				var clampedY = MathUtils.Min(Height - 1, MathUtils.Max(0, y));
+				var x = FP.FloorToInt(shiftedX * InvertedCellSize.X) & WidthMask;
+				var y = FP.FloorToInt(shiftedY * InvertedCellSize.Y) & HeightMask;
 
 				CellIndex cellIndex = default;
-				cellIndex.X = clampedX;
-				cellIndex.Y = clampedY;
+				cellIndex.X = x;
+				cellIndex.Y = y;
 
 				return cellIndex;
 			}
@@ -222,6 +229,17 @@ namespace Game {
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private int FlatIndex(int x, int y) {
 				return x + y * Width;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private static int SpanCount(int lo, int hi, int mask) {
+				return ((hi - lo) & mask) + 1;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private static int OverlapStart(int aLo, int aHi, int bLo, int mask) {
+				var bLoInsideA = ((bLo - aLo) & mask) <= ((aHi - aLo) & mask);
+				return bLoInsideA ? bLo : aLo;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -236,8 +254,12 @@ namespace Game {
 				info.LowerBound = minIndex;
 				info.UpperBound = maxIndex;
 
-				for (var x = minIndex.X; x <= maxIndex.X; x++) {
-					for (var y = minIndex.Y; y <= maxIndex.Y; y++) {
+				var spanX = SpanCount(minIndex.X, maxIndex.X, WidthMask);
+				var spanY = SpanCount(minIndex.Y, maxIndex.Y, HeightMask);
+				var x = minIndex.X;
+				for (var ix = 0; ix < spanX; ix++, x = (x + 1) & WidthMask) {
+					var y = minIndex.Y;
+					for (var iy = 0; iy < spanY; iy++, y = (y + 1) & HeightMask) {
 						var cell = FlatIndex(x, y);
 						if (Heads[cell] == -1) {
 							MarkCellActive(cell);
@@ -258,8 +280,12 @@ namespace Game {
 
 				var nodes = Nodes;
 
-				for (var x = min.X; x <= max.X; x++) {
-					for (var y = min.Y; y <= max.Y; y++) {
+				var spanX = SpanCount(min.X, max.X, WidthMask);
+				var spanY = SpanCount(min.Y, max.Y, HeightMask);
+				var x = min.X;
+				for (var ix = 0; ix < spanX; ix++, x = (x + 1) & WidthMask) {
+					var y = min.Y;
+					for (var iy = 0; iy < spanY; iy++, y = (y + 1) & HeightMask) {
 						var cell = FlatIndex(x, y);
 						var nodeIndex = Heads[cell];
 						var prevIndex = -1;
@@ -267,7 +293,6 @@ namespace Game {
 						while (nodeIndex != -1) {
 							var node = nodes[nodeIndex];
 							if (node.Entity == entity) {
-								// Unlink from the singly-linked cell chain.
 								if (prevIndex == -1) {
 									Heads[cell] = node.Next;
 								}
@@ -275,7 +300,7 @@ namespace Game {
 									nodes[prevIndex].Next = node.Next;
 								}
 
-								FreeNode(nodeIndex);   // leaves a reusable hole
+								FreeNode(nodeIndex);
 								break;
 							}
 
@@ -306,7 +331,6 @@ namespace Game {
 				return info.LowerBound != minIndex || info.UpperBound != maxIndex;
 			}
 
-			// Reuse a hole if one exists, otherwise bump the frontier (growing if full).
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private int AllocateNode() {
 				if (NextFreeNodeIndex != -1) {
@@ -322,8 +346,6 @@ namespace Game {
 				return UsedNodesCount++;
 			}
 
-			// Turn a slot into a hole and push it onto the free list. The frontier
-			// (UsedNodesCount) is intentionally left untouched.
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private void FreeNode(int index) {
 				Nodes[index].Entity = default;

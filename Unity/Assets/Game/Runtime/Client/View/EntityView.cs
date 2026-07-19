@@ -8,6 +8,8 @@ namespace Game.Client {
 		[SerializeField] private List<EntityBehaviour> _entityBehaviours = new();
 
 		[field: SerializeField] public Transform RootTransform { get; private set; }
+		[field: SerializeField] public float PoseCorrectionSpeed { get; set; } = 10;
+		[field: SerializeField] public float AngleCorrectionSpeed { get; set; } = 180;
 
 		public EntityGID Entity { get; protected set; }
 

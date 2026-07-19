@@ -8,11 +8,12 @@ using UnityEngine.SceneManagement;
 namespace Game.Application {
 	public class Gameplay : AppBehaviour<Gameplay>, IState {
 		[SerializeField] private SceneReference _scene;
+		[SerializeField] private double _maxResimulationMs = 10;
 
 		public async UniTask Enter(CancellationToken token) {
 			var connection = App.Get<AppServerConnection>().Connection;
 
-			ClientSetup.CreateAndInitialize(connection);
+			ClientSetup.CreateAndInitialize(connection, maxResimulationMillis: _maxResimulationMs);
 
 			await SceneManager.LoadSceneAsync(_scene.Path, LoadSceneMode.Additive).ToUniTask(cancellationToken: token);
 			SceneManager.SetActiveScene(_scene.LoadedScene);

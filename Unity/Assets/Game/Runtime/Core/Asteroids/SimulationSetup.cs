@@ -8,11 +8,19 @@ using Const = Game.Core.Const;
 namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public static class SimulationSetup {
+			private static int GridWidth = 512;
+			private static int GridHeight = 512;
+			private static FVector2 CellSize = FVector2.One * 2;
+			private static FVector2 WorldSize =
+				new FVector2(GridWidth.ToFP(), GridHeight.ToFP()) * CellSize;
+
 			public static void Register() {
 				Const.DeltaTime = FP.One / S.TickRate;
 				Const.InvDeltaTime = S.TickRate.ToFP();
 
-				W.SetResource(new BroadPhase(512, 512, FVector2.One * 2));
+				W.SetResource(new BroadPhase(GridWidth, GridHeight, CellSize));
+
+				Const.SetWorldSize(WorldSize);
 
 				Systems.Add(new MovementIntegrationSystem());
 				Systems.Add(new ColliderWorldPositionSyncSystem());
@@ -28,8 +36,8 @@ namespace Game {
 					var entity = W.NewEntity<Default>();
 
 					var pos = new FVector2(
-						FP.FromRatio(random.Next(-400, 400), 1),
-						FP.FromRatio(random.Next(-400, 400), 1)
+						FP.FromRaw(random.Next(-WorldSize.X.RawValue, WorldSize.X.RawValue)),
+						FP.FromRaw(random.Next(-WorldSize.Y.RawValue, WorldSize.Y.RawValue))
 					);
 
 					var radius = FP.FromRatio(random.Next(1, 3), 1);
@@ -50,6 +58,11 @@ namespace Game {
 					entity.Set(new Collider {
 						Radius = radius,
 						WorldPosition = pos
+					});
+
+					entity.Set(new Bounds {
+						WorldPosition = pos,
+						Extents = new FVector2(radius, radius) + Const.BoundsPadding
 					});
 
 					entity.Set(new ViewAsset((short)ViewAssetTypes.Asteroid));

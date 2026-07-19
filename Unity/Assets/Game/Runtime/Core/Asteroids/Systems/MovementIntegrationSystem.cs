@@ -20,6 +20,7 @@ namespace Game {
 					var angularDelta = velocity.Angular * Const.DeltaTime;
 
 					physicalBody.WorldCoM += linearDelta;
+					physicalBody.WorldCoM = Const.WrapPosition(physicalBody.WorldCoM);
 					physicalBody.Rotation += angularDelta;
 				});
 			}

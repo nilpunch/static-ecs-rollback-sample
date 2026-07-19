@@ -24,6 +24,8 @@ namespace Game.Client {
 		public NativeArray<Vector2> ToPos;
 		public NativeArray<float> FromAngle;
 		public NativeArray<float> ToAngle;
+		public NativeArray<float> MaxSpeed;
+		public NativeArray<float> MaxAngularSpeed;
 
 		private VariantPool<ViewAsset, EntityView> _pool = new();
 		private Transform[] _poolRoots = new Transform[4];
@@ -159,8 +161,6 @@ namespace Game.Client {
 			_views.Remove(gid);
 		}
 
-		// ── Pool ──────────────────────────────────────────────────────────────────
-
 		private EntityView CreateView(ViewAsset asset, EntityGID gid) {
 			if (!_pool.ContainsVariant(asset)) {
 				var prefab = ViewDataBase.Instance.GetViewPrefab(asset);
@@ -177,6 +177,14 @@ namespace Game.Client {
 
 			var view = _pool.Get(asset);
 			view.AssignEntity(gid);
+
+			// Snap onto the entity so the max-speed smoothing starts from the correct pose, not its last pooled one.
+			ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
+			var spawn = body.WorldOrigin.FromFP();
+			view.RootTransform.SetPositionAndRotation(
+				new Vector3(spawn.x, spawn.y, 0f),
+				Quaternion.Euler(0f, 0f, body.Rotation.Radians.ToFloat() * Mathf.Rad2Deg));
+
 			return view;
 		}
 
@@ -185,8 +193,6 @@ namespace Game.Client {
 			view.transform.SetParent(_poolRoots[_pool.GetKey(view).Id]);
 			_pool.Return(view);
 		}
-
-		// ── Interpolation ───────────────────────────────────────────────────────────
 
 		public void ScheduleTransformSync(float alpha, bool useInterpolation = true) {
 			var count = ActiveViews.Count;
@@ -203,7 +209,12 @@ namespace Game.Client {
 				ToPos = ToPos,
 				FromAngle = FromAngle,
 				ToAngle = ToAngle,
+				MaxSpeed = MaxSpeed,
+				MaxAngularSpeed = MaxAngularSpeed,
 				Alpha = alpha,
+				DeltaTime = Time.deltaTime,
+				WorldSize = Core.Const.WorldSize.FromFP(),
+				WorldHalf = Core.Const.WorldHalf.FromFP(),
 			}.Schedule(Transforms);
 			_jobScheduled = true;
 		}
@@ -217,7 +228,10 @@ namespace Game.Client {
 
 		private void Gather(int count, bool useInterpolation) {
 			for (var i = 0; i < count; i++) {
-				var gid = ActiveViews[i].Entity;
+				var view = ActiveViews[i];
+				var gid = view.Entity;
+				MaxSpeed[i] = view.PoseCorrectionSpeed;
+				MaxAngularSpeed[i] = view.AngleCorrectionSpeed * Mathf.Deg2Rad;
 
 				ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
 				var toPos = body.WorldOrigin.FromFP();
@@ -254,6 +268,8 @@ namespace Game.Client {
 			ToPos = new NativeArray<Vector2>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
 			FromAngle = new NativeArray<float>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
 			ToAngle = new NativeArray<float>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+			MaxSpeed = new NativeArray<float>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
+			MaxAngularSpeed = new NativeArray<float>(capacity, Allocator.Persistent, NativeArrayOptions.UninitializedMemory);
 		}
 
 		[BurstCompile]
@@ -262,22 +278,80 @@ namespace Game.Client {
 			[ReadOnly] public NativeArray<Vector2> ToPos;
 			[ReadOnly] public NativeArray<float> FromAngle;
 			[ReadOnly] public NativeArray<float> ToAngle;
+			[ReadOnly] public NativeArray<float> MaxSpeed;
+			[ReadOnly] public NativeArray<float> MaxAngularSpeed;
 			public float Alpha;
+			public float DeltaTime;
+			public float2 WorldSize;
+			public float2 WorldHalf;
 
 			public void Execute(int index, TransformAccess transform) {
 				var a = FromPos[index];
 				var b = ToPos[index];
-				var x = a.x + (b.x - a.x) * Alpha;
-				var y = a.y + (b.y - a.y) * Alpha;
 
-				var half = LerpAngle(FromAngle[index], ToAngle[index], Alpha) * 0.5f;
+				// Interpolate along the shortest path around the torus. A body that wrapped
+				// last tick (e.g. +half -> -half) has a raw from->to delta of a full world;
+				// wrapping it keeps the visual motion continuous across the seam instead of
+				// sweeping back through the centre.
+				var toDeltaX = Wrap(b.x - a.x, WorldSize.x, WorldHalf.x);
+				var toDeltaY = Wrap(b.y - a.y, WorldSize.y, WorldHalf.y);
+				var targetX = a.x + toDeltaX * Alpha;
+				var targetY = a.y + toDeltaY * Alpha;
+
+				var current = transform.position;
+				var maxStep = MaxSpeed[index] * DeltaTime;
+				// Shortest signed distance from the drawn pose to the target, so crossing the
+				// seam is a small step rather than a full-world pose correction.
+				var dx = Wrap(targetX - current.x, WorldSize.x, WorldHalf.x);
+				var dy = Wrap(targetY - current.y, WorldSize.y, WorldHalf.y);
+				var distanceSq = dx * dx + dy * dy;
+
+				float x, y;
+				if (distanceSq <= maxStep * maxStep || maxStep <= 0f) {
+					x = current.x + dx;
+					y = current.y + dy;
+				}
+				else {
+					var scale = maxStep / math.sqrt(distanceSq);
+					x = current.x + dx * scale;
+					y = current.y + dy * scale;
+				}
+
+				// Fold the drawn position back into [-half, half) so it stays on the torus.
+				x = Wrap(x, WorldSize.x, WorldHalf.x);
+				y = Wrap(y, WorldSize.y, WorldHalf.y);
+
+				var targetAngle = LerpAngle(FromAngle[index], ToAngle[index], Alpha);
+				var rotation = transform.rotation;
+				var currentAngle = 2f * math.atan2(rotation.z, rotation.w);
+				var maxAngleStep = MaxAngularSpeed[index] * DeltaTime;
+				var angleDelta = ShortestDelta(currentAngle, targetAngle);
+
+				float half;
+				if (math.abs(angleDelta) <= maxAngleStep || maxAngleStep <= 0f) {
+					half = targetAngle * 0.5f;
+				}
+				else {
+					half = (currentAngle + math.sign(angleDelta) * maxAngleStep) * 0.5f;
+				}
+
 				transform.position = new Vector3(x, y, 0f);
 
 				math.sincos(half, out var sin, out var cos);
 				transform.rotation = new Quaternion(0f, 0f, sin, cos);
 			}
 
+			// Wrap a value into [-half, half); mirrors Const.WrapCoord in float space.
+			private static float Wrap(float v, float size, float half) {
+				return v - size * math.floor((v + half) / size);
+			}
+
 			private static float LerpAngle(float from, float to, float t) {
+				return from + ShortestDelta(from, to) * t;
+			}
+
+			// Signed shortest angular distance from -> to, in (-PI, PI].
+			private static float ShortestDelta(float from, float to) {
 				var delta = math.fmod(to - from, 2f * math.PI);
 				if (delta > math.PI) {
 					delta -= 2f * math.PI;
@@ -286,7 +360,7 @@ namespace Game.Client {
 					delta += 2f * math.PI;
 				}
 
-				return from + delta * t;
+				return delta;
 			}
 		}
 
@@ -317,7 +391,7 @@ namespace Game.Client {
 
 			for (int i = 0; i < _poolRoots.Length; i++) {
 				if (_poolRoots[i] != null) {
-					Object.Destroy(_poolRoots[i]);
+					Object.Destroy(_poolRoots[i].gameObject);
 				}
 			}
 
@@ -340,6 +414,14 @@ namespace Game.Client {
 
 			if (ToAngle.IsCreated) {
 				ToAngle.Dispose();
+			}
+
+			if (MaxSpeed.IsCreated) {
+				MaxSpeed.Dispose();
+			}
+
+			if (MaxAngularSpeed.IsCreated) {
+				MaxAngularSpeed.Dispose();
 			}
 		}
 	}

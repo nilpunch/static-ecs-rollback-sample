@@ -13,6 +13,7 @@ namespace Game.Application {
 		[SerializeField] private SceneReference _scene;
 		[SerializeField] private int _port = 1887;
 		[SerializeField] private int _numberOfAsteroids = 100;
+		[SerializeField] private double _maxResimulationMs = 10;
 
 		public async UniTask Enter(CancellationToken token) {
 			// Server.
@@ -22,7 +23,7 @@ namespace Game.Application {
 
 			// Client.
 			var connection = App.Get<AppServerConnection>().Connection;
-			ClientSetup.CreateAndInitialize(connection, TickSyncConfig.Robust);
+			ClientSetup.CreateAndInitialize(connection, TickSyncConfig.Robust, _maxResimulationMs);
 			connection.Connect(new IPEndPoint(IPAddress.Loopback, _port));
 
 			await SceneManager.LoadSceneAsync(_scene.Path, LoadSceneMode.Additive).ToUniTask(cancellationToken: token);
