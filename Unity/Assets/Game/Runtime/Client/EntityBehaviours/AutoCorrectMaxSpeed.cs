@@ -13,6 +13,8 @@ namespace Game.Client {
 		}
 
 		protected override void OnEntityAssigned() {
+			return;
+
 			if (Entity.Has<Velocity>()) {
 				enabled = true;
 				TryUpdateVelocity();
@@ -23,9 +25,9 @@ namespace Game.Client {
 			}
 		}
 
-		private void Update() {
-			TryUpdateVelocity();
-		}
+		// private void Update() {
+		// 	TryUpdateVelocity();
+		// }
 
 		private void TryUpdateVelocity() {
 			var entitySpeed = FVector2.Length(Entity.Read<Velocity>()!.Linear).ToFloat();

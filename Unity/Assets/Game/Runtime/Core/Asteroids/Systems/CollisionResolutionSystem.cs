@@ -2,19 +2,17 @@
 using Fixed;
 using Fixed32;
 using Game.Core;
-using Shenanicode.Rollback;
 using Const = Game.Core.Const;
 
 namespace Game {
-	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
+	public abstract partial class Core<TWorld> {
 		public class CollisionResolutionSystem : ISystem {
 			public void Update() {
 				W.Query().BatchDelete<W.Multi<ContactPair>>();
 
 				var broadPhase = W.GetResource<BroadPhase>();
-				broadPhase.CollectPairs();
 
-				var pairs = broadPhase.Pairs;
+				var pairs = broadPhase.CollectPairs();
 				for (var i = 0; i < pairs.Count; i++) {
 					var (entityA, entityB) = pairs[i];
 
@@ -23,7 +21,7 @@ namespace Game {
 
 					// Minimum-image displacement so a pair straddling the seam measures the
 					// short way across the torus, matching the wrapped broad phase.
-					var delta = Const.MinImageDelta(colliderB.WorldPosition - colliderA.WorldPosition);
+					var delta = Const.Wrap(colliderB.WorldPosition - colliderA.WorldPosition);
 					var distSqr = Fixed64.FVector2.LengthSqr(delta.To64());
 					var radiusSum = colliderA.Radius + colliderB.Radius;
 

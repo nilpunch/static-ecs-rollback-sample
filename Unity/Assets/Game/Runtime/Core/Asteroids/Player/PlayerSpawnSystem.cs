@@ -4,13 +4,13 @@ using Game.Core;
 using Shenanicode.Rollback;
 
 namespace Game {
-	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
-		public class PlayerCreationSystem : ISystem {
+	public abstract partial class Core<TWorld> {
+		public class PlayerSpawnSystem : ISystem {
 			public void Update() {
 				var mapping = W.GetResource<PlayerMapping>();
 
 				foreach (var signal in S.GetAllSignals<PlayerConnectedSignal>()) {
-					mapping.EntityByChannel.Add(signal.Channel, CreateShip());
+					mapping.EntityByChannel.Add(signal.Channel, CreateShip(signal.Channel));
 				}
 
 				foreach (var signal in S.GetAllSignals<PlayerDisconnectedSignal>()) {
@@ -19,7 +19,7 @@ namespace Game {
 				}
 			}
 
-			private W.Entity CreateShip() {
+			private W.Entity CreateShip(ushort channel) {
 				var entity = W.NewEntity<Default>();
 
 				var pos = FVector2.Zero;
@@ -44,6 +44,9 @@ namespace Game {
 				entity.Set(Bounds.New(pos, FVector2.One * radius));
 
 				entity.Set(new ViewAsset((short)ViewAssetTypes.Ship));
+
+				entity.Set(new Player { Chanel = channel });
+				entity.Set(new Ship());
 
 				return entity;
 			}

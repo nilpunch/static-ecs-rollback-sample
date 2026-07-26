@@ -156,7 +156,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04162b558d174815bc5cf1cd9928e40c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Client::Game.Client.AsteroidSize
-  _sprite: {fileID: 5006927824455654262}
+  _transform: {fileID: 3254663362855527188}
   _originalSpriteRadius: 0.32
 --- !u!114 &5492257924589642350
 MonoBehaviour:

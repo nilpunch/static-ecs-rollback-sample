@@ -182,7 +182,7 @@ namespace Game.Client {
 			view.AssignEntity(gid);
 
 			ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
-			var spawn = Core.Const.WrapPosition(body.WorldOrigin - CameraPosition).FromFP();
+			var spawn = Core.Const.Wrap(body.WorldOrigin - CameraPosition).FromFP();
 			view.RootTransform.SetPositionAndRotation(
 				new Vector3(spawn.x, spawn.y, 0f),
 				Quaternion.Euler(0f, 0f, body.Rotation.Radians.ToFloat() * Mathf.Rad2Deg));
@@ -216,7 +216,7 @@ namespace Game.Client {
 				Alpha = alpha,
 				DeltaTime = Time.deltaTime,
 				WorldSize = Core.Const.WorldSize.FromFP(),
-				WorldHalf = Core.Const.WorldHalf.FromFP(),
+				WorldHalf = Core.Const.WorldSizeHalf.FromFP(),
 			}.Schedule(Transforms);
 			_jobScheduled = true;
 		}
@@ -236,14 +236,14 @@ namespace Game.Client {
 				MaxAngularSpeed[i] = view.AngleCorrectionSpeed * Mathf.Deg2Rad;
 
 				ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
-				var toPos = Core.Const.WrapPosition(body.WorldOrigin - CameraPosition).FromFP();
+				var toPos = Core.Const.Wrap(body.WorldOrigin - CameraPosition).FromFP();
 				var toAngle = body.Rotation.Radians.ToFloat();
 
 				Vector2 fromPos;
 				float fromAngle;
 				if (useInterpolation && gid.TryUnpack<GameWorldPrev>(out var entityPrev)) {
 					ref readonly var bodyPrev = ref entityPrev.Read<PhysicalBody>()!;
-					fromPos = Core.Const.WrapPosition(bodyPrev.WorldOrigin - CameraPosition).FromFP();
+					fromPos = Core.Const.Wrap(bodyPrev.WorldOrigin - CameraPosition).FromFP();
 					fromAngle = bodyPrev.Rotation.Radians.ToFloat();
 				}
 				else {

@@ -7,22 +7,13 @@ using Const = Game.Core.Const;
 namespace Game {
 	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
 		public static class SimulationSetup {
-			private static int GridWidth = 512;
-			private static int GridHeight = 512;
-			private static FVector2 CellSize = FVector2.One * 2;
-			private static FVector2 WorldSize =
-				new FVector2(GridWidth.ToFP(), GridHeight.ToFP()) * CellSize;
-
 			public static void Register() {
-				Const.DeltaTime = FP.One / Const.TickRate;
-				Const.InvDeltaTime = Const.TickRate.ToFP();
-
-				W.SetResource(new BroadPhase(GridWidth, GridHeight, CellSize));
+				W.SetResource(new BroadPhase(Const.GridWidth, Const.GridHeight, Const.CellSize));
 				W.SetResource(new PlayerMapping());
 
-				Const.SetWorldSize(WorldSize);
-
-				Systems.Add(new PlayerCreationSystem());
+				Systems.Add(new PlayerSpawnSystem());
+				Systems.Add(new ShipControlSystem(maxThrust: 10.ToFP(), maxTurn: FAngle.FromRadians(3.ToFP())));
+				Systems.Add(new ShipPhysicsSystem(turnStabilization: FAngle.FromRadians(2.ToFP())));
 				Systems.Add(new MovementIntegrationSystem());
 				Systems.Add(new ColliderWorldPositionSyncSystem());
 				Systems.Add(new BroadPhaseSystem());
@@ -37,8 +28,8 @@ namespace Game {
 					var entity = W.NewEntity<Default>();
 
 					var pos = new FVector2(
-						FP.FromRaw(random.Next(-WorldSize.X.RawValue, WorldSize.X.RawValue)),
-						FP.FromRaw(random.Next(-WorldSize.Y.RawValue, WorldSize.Y.RawValue))
+						FP.FromRaw(random.Next(-Const.WorldSize.X.RawValue, Const.WorldSize.X.RawValue)),
+						FP.FromRaw(random.Next(-Const.WorldSize.Y.RawValue, Const.WorldSize.Y.RawValue))
 					);
 
 					var radius = FP.FromRatio(random.Next(1, 3), 1);

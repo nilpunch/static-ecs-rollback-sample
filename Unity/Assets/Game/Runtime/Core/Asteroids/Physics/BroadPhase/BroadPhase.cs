@@ -14,7 +14,7 @@ namespace Game {
 
 			private readonly List<W.Entity> _queryBuffer = new();
 
-			public readonly List<(W.Entity A, W.Entity B)> Pairs = new();
+			private readonly List<(W.Entity A, W.Entity B)> _pairsBuffer = new();
 			private readonly List<(W.Entity Entity, CellIndex Lo, CellIndex Hi)> _cellScratch = new();
 
 			public struct Node {
@@ -150,13 +150,8 @@ namespace Game {
 				return _queryBuffer;
 			}
 
-			/// <summary>
-			/// Collects every candidate collision pair in a single sweep over non-empty
-			/// cells. Each unordered pair is emitted exactly once (ordered A.ID &lt; B.ID),
-			/// so callers need no further deduplication.
-			/// </summary>
-			public void CollectPairs() {
-				Pairs.Clear();
+			public List<(W.Entity A, W.Entity B)> CollectPairs() {
+				_pairsBuffer.Clear();
 
 				var nodes = Nodes;
 				var heads = Heads;
@@ -190,10 +185,12 @@ namespace Game {
 								continue;
 							}
 
-							Pairs.Add(entityA.ID < entityB.ID ? (entityA, entityB) : (entityB, entityA));
+							_pairsBuffer.Add(entityA.ID < entityB.ID ? (entityA, entityB) : (entityB, entityA));
 						}
 					}
 				}
+
+				return _pairsBuffer;
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]

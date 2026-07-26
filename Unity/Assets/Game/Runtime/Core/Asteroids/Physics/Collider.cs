@@ -7,12 +7,5 @@ namespace Game.Core {
 		public FP Radius;
 
 		public FVector2 WorldPosition;
-
-		public static Collider New(FVector2 offset, FP radius) {
-			return new Collider() {
-				Offset = offset,
-				Radius = radius,
-			};
-		}
 	}
 }

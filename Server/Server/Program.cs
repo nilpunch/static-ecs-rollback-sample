@@ -45,7 +45,7 @@ async Task<int> RunProgram(ParseResult parseResult, CancellationToken arg2) {
 	// if (parseResult.GetValue(fileOption) is { } parsedFile) {
 	// 	Console.WriteLine($"WorldFile: {parsedFile.Name}");
 	// }
-	SimulationSetup.PopulateAsteroids(1000);
+	SimulationSetup.PopulateAsteroids(10000);
 
 	clientListener.Start();
 	Console.WriteLine($"Started listening on port: {parseResult.GetValue(portOption)}");
