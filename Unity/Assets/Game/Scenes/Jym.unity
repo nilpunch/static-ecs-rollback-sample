@@ -131,6 +131,10 @@ PrefabInstance:
       propertyPath: _isJym
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2800718657430718595, guid: 2579200bc62c240539bb8026935daf38, type: 3}
+      propertyPath: _isLocalTesting
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 6361180053919612972, guid: 2579200bc62c240539bb8026935daf38, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

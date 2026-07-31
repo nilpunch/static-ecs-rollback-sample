@@ -10,7 +10,7 @@ using Unity.Jobs;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Jobs;
-using static Game.Core<Game.Client.ClientWorld>;
+using static Game.Core<Game.Client.ClientWorldType>;
 using Object = UnityEngine.Object;
 
 namespace Game.Client {
@@ -181,7 +181,7 @@ namespace Game.Client {
 			var view = _pool.Get(asset);
 			view.AssignEntity(gid);
 
-			ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
+			ref readonly var body = ref gid.Unpack<ClientWorldType>().Read<PhysicalBody>()!;
 			var spawn = Core.Const.Wrap(body.WorldOrigin - CameraPosition).FromFP();
 			view.RootTransform.SetPositionAndRotation(
 				new Vector3(spawn.x, spawn.y, 0f),
@@ -235,7 +235,7 @@ namespace Game.Client {
 				MaxSpeed[i] = view.PoseCorrectionSpeed;
 				MaxAngularSpeed[i] = view.AngleCorrectionSpeed * Mathf.Deg2Rad;
 
-				ref readonly var body = ref gid.Unpack<ClientWorld>().Read<PhysicalBody>()!;
+				ref readonly var body = ref gid.Unpack<ClientWorldType>().Read<PhysicalBody>()!;
 				var toPos = Core.Const.Wrap(body.WorldOrigin - CameraPosition).FromFP();
 				var toAngle = body.Rotation.Radians.ToFloat();
 

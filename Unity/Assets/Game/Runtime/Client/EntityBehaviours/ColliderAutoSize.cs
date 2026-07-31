@@ -1,6 +1,5 @@
 ﻿using System;
 using Fixed32;
-using UnityEditor;
 using UnityEngine;
 using Collider = Game.Core.Collider;
 
@@ -15,17 +14,19 @@ namespace Game.Client {
 			_transform.localScale = actualRadius / _originalSpriteRadius * Vector3.one;
 		}
 
+		#if UNITY_EDITOR
 		private void OnDrawGizmosSelected() {
 			if (_transform == null) {
 				return;
 			}
 
-			Handles.Disc(_transform.rotation,
+			UnityEditor.Handles.Disc(_transform.rotation,
 				_transform.position,
 				Vector3.forward,
 				_originalSpriteRadius,
 				default,
 				default);
 		}
+		#endif
 	}
 }

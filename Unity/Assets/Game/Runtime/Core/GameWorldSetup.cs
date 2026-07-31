@@ -1,9 +1,8 @@
 using FFS.Libraries.StaticEcs;
 using Game.Core;
-using Shenanicode.Rollback;
 
 namespace Game {
-	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
+	public abstract partial class Core<TWorld> {
 		public static class GameWorldSetup {
 			public static WorldConfig WorldConfig => new() {
 				TrackingBufferSize = 2,

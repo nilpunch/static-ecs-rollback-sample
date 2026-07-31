@@ -3,7 +3,7 @@ using Game.Client;
 using Game.Core;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static Game.Core<Game.Client.ClientWorld>;
+using static Game.Core<Game.Client.ClientWorldType>;
 
 namespace Game.Application
 {

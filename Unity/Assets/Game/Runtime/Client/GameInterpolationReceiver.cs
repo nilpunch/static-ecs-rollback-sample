@@ -2,7 +2,7 @@
 using Shenanicode.Rollback;
 
 namespace Game.Client {
-	using static Core<ClientWorld>;
+	using static Core<ClientWorldType>;
 
 	public class GameInterpolationReceiver : IInterpolationReceiver {
 		private BinaryPackWriter _buffer = BinaryPackWriter.Create(new byte[GameWorldRollback.WorldSnapshotLength]);

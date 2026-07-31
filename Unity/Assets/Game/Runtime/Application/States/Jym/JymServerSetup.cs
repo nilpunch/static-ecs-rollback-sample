@@ -3,11 +3,11 @@ using Game.Client;
 using Shenanicode.Rollback;
 
 namespace Game.Application {
-	using static Core<ServerWorld>;
+	using static Core<ServerWorldType>;
 
-	public struct ServerWorld : IWorldType, ISessionType { }
+	public struct ServerWorldType : IWorldType { }
 
-	public abstract class SRVR : Server<ServerWorld> { }
+	public abstract class SRVR : Server<SessionType> { }
 
 	public static class JymServerSetup {
 		public static void CreateAndInitialize(IRemoteClientListener remoteClientListener, int numberOfAsteroids) {

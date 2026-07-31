@@ -8,7 +8,7 @@ using Game.Core;
 using Shenanicode.Rollback;
 
 namespace Game {
-	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
+	public abstract partial class Core<TWorld> {
 		public class BroadPhase : IResource {
 			private const int InitialCapacity = 128;
 
@@ -169,7 +169,7 @@ namespace Game {
 					var nodeIndex = heads[cell];
 					while (nodeIndex != -1) {
 						var entity = nodes[nodeIndex].Entity;
-						ref var info = ref W.Components<BroadPhaseInfo>.Instance.Ref(entity)!;
+						ref var info = ref entity.Ref<BroadPhaseInfo>();
 						scratch.Add((entity, info.LowerBound, info.UpperBound));
 						nodeIndex = nodes[nodeIndex].Next;
 					}

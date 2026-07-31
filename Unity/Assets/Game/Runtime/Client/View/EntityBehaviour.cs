@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Game.Client {
 	public abstract class EntityBehaviour : MonoBehaviour {
 		public EntityGID EntityGID { get; private set; }
-		public W.Entity Entity => EntityGID.Unpack<ClientWorld>();
+		public W.Entity Entity => EntityGID.Unpack<ClientWorldType>();
 
 		public void AssignEntity(EntityGID entity) {
 			EntityGID = entity;

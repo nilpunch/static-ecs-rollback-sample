@@ -1,6 +1,5 @@
 using FFS.Libraries.StaticEcs;
 using Game.Core;
-using Shenanicode.Rollback;
 
 namespace Game {
 	public abstract partial class Core<TWorld> {
@@ -16,9 +15,10 @@ namespace Game {
 					});
 
 				// Remove dying.
-				W.Query<Or<AllOnlyDisabled<Bounds>, All<DestroySelf>>>().For(ref broadPhase,
+				W.Query<All<DestroySelf>>().For(ref broadPhase,
 					static (ref BroadPhase broadPhase, W.Entity entity, in BroadPhaseInfo info) => {
 						broadPhase.Remove(entity, info);
+						entity.Delete<BroadPhaseInfo>();
 					});
 
 				// Update existing.

@@ -2,10 +2,10 @@
 using Shenanicode.Rollback;
 
 namespace Game.Client {
-	public struct GameWorldPrev : IWorldType, ISessionType { }
+	public struct GameWorldPrev : IWorldType { }
 
 	/// <summary>
 	/// Previous GameWorld state.
 	/// </summary>
-	public abstract class WP : World<GameWorldPrev> { }
+	public abstract class WP : Core<GameWorldPrev>.W { }
 }

@@ -1,9 +1,8 @@
-using FFS.Libraries.StaticEcs;
 using FFS.Libraries.StaticPack;
 using Shenanicode.Rollback;
 
 namespace Game {
-	public abstract partial class Core<TWorld> where TWorld : struct, ISessionType, IWorldType {
+	public abstract partial class Core<TWorld> {
 		public class GameWorldRollback : IRollback {
 			private const int EntitiesCount = 10000;
 			private const int BytesPerEntity = 64;

@@ -3,11 +3,11 @@
 		public static void CreateAndInitialize() {
 			Core<GameWorldPrev>.GameWorldSetup.CreateAndInitialize();
 
-			Core<ClientWorld>.S.SetInterpolationReceiver(new GameInterpolationReceiver());
+			Core<ClientWorldType>.S.SetInterpolationReceiver(new GameInterpolationReceiver());
 		}
 
 		public static void Destroy() {
-			WP.Destroy();
+			Core<GameWorldPrev>.GameWorldSetup.Destroy();
 		}
 	}
 }
