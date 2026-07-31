@@ -1,7 +1,7 @@
 using Shenanicode.Rollback;
 
 namespace Game.Core {
-	public struct MoveInput : IInput {
+	public struct ShipInput : IInput {
 		private const byte LeftMask  = 1 << 0;
 		private const byte RightMask = 1 << 1;
 		private const byte UpMask    = 1 << 2;

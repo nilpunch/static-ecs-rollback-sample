@@ -21,9 +21,13 @@ namespace Game.Application
 		}
 
 		private void Update() {
+			if (!CLNT.Synced) {
+				return;
+			}
+
 			var move  = _moveInput.ToInputAction().ReadValue<Vector2>();
 
-			var moveInput = new MoveInput {
+			var moveInput = new ShipInput {
 				Up    = move.y >  0.5f,
 				Down  = move.y < -0.5f,
 				Left  = move.x < -0.5f,

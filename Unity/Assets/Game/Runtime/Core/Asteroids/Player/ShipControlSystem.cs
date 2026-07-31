@@ -15,7 +15,7 @@ namespace Game {
 			}
 
 			public void Update() {
-				ref var moveInputs = ref S.GetAllInputs<MoveInput>();
+				ref var shipInputs = ref S.GetAllInputs<ShipInput>();
 
 				foreach (var entity in W.Query<All<Ship, Player>>().Entities()) {
 					ref Ship ship = ref entity.Ref<Ship>();
@@ -24,7 +24,7 @@ namespace Game {
 					ship.Thrust = FP.Zero;
 					ship.Turn = FAngle.Zero;
 
-					var input = moveInputs.Get(player.Chanel).LastFresh();
+					var input = shipInputs.Get(player.Chanel).LastFresh();
 					if (input.Up) {
 						ship.Thrust = _maxThrust;
 					}

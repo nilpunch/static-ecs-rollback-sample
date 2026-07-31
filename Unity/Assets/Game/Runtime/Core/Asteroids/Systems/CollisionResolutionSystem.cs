@@ -2,7 +2,9 @@
 using Fixed;
 using Fixed32;
 using Game.Core;
+using Collider = Game.Core.Collider;
 using Const = Game.Core.Const;
+using ContactPair = Game.Core.ContactPair;
 
 namespace Game {
 	public abstract partial class Core<TWorld> {
@@ -13,20 +15,18 @@ namespace Game {
 				var broadPhase = W.GetResource<BroadPhase>();
 
 				var pairs = broadPhase.CollectPairs();
+
 				for (var i = 0; i < pairs.Count; i++) {
 					var (entityA, entityB) = pairs[i];
 
 					ref readonly var colliderA = ref entityA.Read<Collider>()!;
 					ref readonly var colliderB = ref entityB.Read<Collider>()!;
 
-					// Minimum-image displacement so a pair straddling the seam measures the
-					// short way across the torus, matching the wrapped broad phase.
 					var delta = Const.Wrap(colliderB.WorldPosition - colliderA.WorldPosition);
 					var distSqr = Fixed64.FVector2.LengthSqr(delta.To64());
 					var radiusSum = colliderA.Radius + colliderB.Radius;
 
 					if (distSqr < (radiusSum * radiusSum).To64()) {
-						// CollectPairs yields each pair once, so no contact-dedup check is needed.
 						Resolve(entityA, entityB, colliderA, colliderB, delta, distSqr.To32());
 						AddContact(entityA, entityB);
 					}

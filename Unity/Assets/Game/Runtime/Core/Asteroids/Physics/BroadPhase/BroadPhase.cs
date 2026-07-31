@@ -27,14 +27,14 @@ namespace Game {
 			public readonly int Height;
 			public readonly int WidthMask;
 			public readonly int HeightMask;
-			public readonly FVector2 CellSize;
-			public readonly FVector2 InvertedCellSize;
+			public readonly int CellSize;
+			public readonly int CellSizeShift;
 			public readonly FVector2 OriginOffset;
 
 			public int[] Heads;
 			public Node[] Nodes;
 
-			public int[] ActiveCells;
+			public int[] ActiveCells; // Two or more entries in cell.
 			public int ActiveCellCount;
 			private int[] _cellSlot;
 
@@ -42,7 +42,7 @@ namespace Game {
 			public int NextFreeNodeIndex;
 			public uint QueryId;
 
-			public BroadPhase(int width, int height, FVector2 cellSize) {
+			public BroadPhase(int width, int height, int cellSize) {
 				if (!MathUtils.IsPowerOfTwo(width)) {
 					throw new ArgumentException("World width must be a power of two for bit-mask wrapping.");
 				}
@@ -51,13 +51,17 @@ namespace Game {
 					throw new ArgumentException("World height must be a power of two for bit-mask wrapping.");
 				}
 
+				if (!MathUtils.IsPowerOfTwo(cellSize)) {
+					throw new ArgumentException("Cell size must be a power of two.");
+				}
+
 				Width = width;
 				Height = height;
 				WidthMask = width - 1;
 				HeightMask = height - 1;
 				CellSize = cellSize;
+				CellSizeShift = MathUtils.CeilLog2((uint)CellSize);
 
-				InvertedCellSize = FVector2.One / cellSize;
 				OriginOffset = new FVector2(Width.ToFP(), Height.ToFP()) * cellSize / 2;
 
 				Heads = new int[Width * Height];
@@ -115,10 +119,10 @@ namespace Game {
 				var heads = Heads;
 				var nodes = Nodes;
 
-				var minCellX = FP.FloorToInt((bounds.Min.X + OriginOffset.X) * InvertedCellSize.X);
-				var minCellY = FP.FloorToInt((bounds.Min.Y + OriginOffset.Y) * InvertedCellSize.Y);
-				var maxCellX = FP.FloorToInt((bounds.Max.X + OriginOffset.X) * InvertedCellSize.X);
-				var maxCellY = FP.FloorToInt((bounds.Max.Y + OriginOffset.Y) * InvertedCellSize.Y);
+				var minCellX = FP.FloorToInt(ScaleToGrid(bounds.Min.X + OriginOffset.X));
+				var minCellY = FP.FloorToInt(ScaleToGrid(bounds.Min.Y + OriginOffset.Y));
+				var maxCellX = FP.FloorToInt(ScaleToGrid(bounds.Max.X + OriginOffset.X));
+				var maxCellY = FP.FloorToInt(ScaleToGrid(bounds.Max.Y + OriginOffset.Y));
 
 				var spanX = MathUtils.Min(maxCellX - minCellX + 1, Width);
 				var spanY = MathUtils.Min(maxCellY - minCellY + 1, Height);
@@ -213,14 +217,19 @@ namespace Game {
 				var shiftedX = position.X + OriginOffset.X;
 				var shiftedY = position.Y + OriginOffset.Y;
 
-				var x = FP.FloorToInt(shiftedX * InvertedCellSize.X) & WidthMask;
-				var y = FP.FloorToInt(shiftedY * InvertedCellSize.Y) & HeightMask;
+				var x = FP.FloorToInt(ScaleToGrid(shiftedX)) & WidthMask;
+				var y = FP.FloorToInt(ScaleToGrid(shiftedY)) & HeightMask;
 
 				CellIndex cellIndex = default;
 				cellIndex.X = x;
 				cellIndex.Y = y;
 
 				return cellIndex;
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			private FP ScaleToGrid(FP fp) {
+				return FP.FromRaw(fp.RawValue >> CellSizeShift); // x / CellSize
 			}
 
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -258,7 +267,8 @@ namespace Game {
 					var y = minIndex.Y;
 					for (var iy = 0; iy < spanY; iy++, y = (y + 1) & HeightMask) {
 						var cell = FlatIndex(x, y);
-						if (Heads[cell] == -1) {
+						var head = Heads[cell];
+						if (head != -1 && Nodes[head].Next == -1) {
 							MarkCellActive(cell);
 						}
 
@@ -305,7 +315,8 @@ namespace Game {
 							nodeIndex = node.Next;
 						}
 
-						if (Heads[cell] == -1) {
+						var head = Heads[cell];
+						if (head != -1 && nodes[head].Next == -1) {
 							MarkCellInactive(cell);
 						}
 					}

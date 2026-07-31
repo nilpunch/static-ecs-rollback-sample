@@ -48,5 +48,5 @@ MonoBehaviour:
     asset: {fileID: 102900000, guid: ddd6b4baa372d486280f3b5f58278a22, type: 3}
     guid: ddd6b4baa372d486280f3b5f58278a22
   _port: 1886
-  _numberOfAsteroids: 1000
-  _maxResimulationMs: 10
+  _numberOfAsteroids: 5000
+  _maxResimulationMs: 16

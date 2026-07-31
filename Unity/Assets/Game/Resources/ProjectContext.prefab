@@ -47,6 +47,7 @@ MonoBehaviour:
   _scene:
     asset: {fileID: 102900000, guid: 99c9720ab356a0642a771bea13969a05, type: 3}
     guid: 99c9720ab356a0642a771bea13969a05
+  _maxResimulationMs: 16
 --- !u!1 &4069674058138216999
 GameObject:
   m_ObjectHideFlags: 0

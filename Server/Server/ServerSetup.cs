@@ -2,9 +2,9 @@ using FFS.Libraries.StaticEcs;
 using Shenanicode.Rollback;
 using static Game.Core<ServerWorld>;
 
-public struct ServerWorld : IWorldType, ISessionType { }
+public struct ServerWorld : IWorldType { }
 
-public abstract class SRVR : Server<ServerWorld> { }
+public abstract class SRVR : Server<SessionType> { }
 
 public static class ServerSetup {
 	public static void CreateAndInitialize(IRemoteClientListener remoteClientListener) {
@@ -13,8 +13,6 @@ public static class ServerSetup {
 		SRVR.Initialize();
 
 		GameWorldSetup.CreateAndInitialize();
-
-		SimulationSetup.PopulateAsteroids(100);
 	}
 
 	public static void Destroy() {

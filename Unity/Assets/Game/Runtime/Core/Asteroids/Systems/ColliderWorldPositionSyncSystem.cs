@@ -25,7 +25,7 @@ namespace Game {
 
 			private struct SingleColliderBodies : W.IQuery.Write<Collider>.Read<PhysicalBody, Bounds> {
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
-				public void Invoke(World<TWorld>.Entity entity, ref Collider collider, in PhysicalBody physicalBody, in Bounds bounds) {
+				public void Invoke(W.Entity entity, ref Collider collider, in PhysicalBody physicalBody, in Bounds bounds) {
 					collider.WorldPosition = physicalBody.WorldCoM + physicalBody.Rotation.Counterclockwise * (physicalBody.OriginOffset + collider.Offset);
 
 					var positionDelta = collider.WorldPosition - bounds.WorldPosition;

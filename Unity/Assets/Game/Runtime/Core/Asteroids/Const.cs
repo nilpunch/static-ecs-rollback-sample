@@ -9,12 +9,11 @@ namespace Game.Core {
 
 		public static int GridWidth = 512;
 		public static int GridHeight = 512;
-		public static FVector2 CellSize = FVector2.One * 2;
+		public static int CellSize = 4;
 
 		public static readonly FP BoundsPadding = FP.FromRatio(5, 10);
 
 		public static FP DeltaTime = FP.One / TickRate;
-		public static FP InvDeltaTime = TickRate.ToFP();
 		public static FVector2 WorldSize = new FVector2(GridWidth.ToFP(), GridHeight.ToFP()) * CellSize;
 		public static FVector2 WorldSizeHalf = WorldSize / 2;
 		private static int WorldSizeRawMaskX = WorldSize.X.RawValue - 1;
