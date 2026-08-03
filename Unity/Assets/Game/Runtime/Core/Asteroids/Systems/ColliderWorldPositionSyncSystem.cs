@@ -12,15 +12,6 @@ namespace Game {
 				.Write<Collider>()
 				.Read<PhysicalBody, Bounds>()
 				.For<SingleColliderBodies>();
-
-				// W.Query().For(static (ref Collider collider, in W.Link<Body> bodyLink) => {
-				// 	if (!bodyLink.Value.TryUnpack<TWorld>(out var body)) {
-				// 		return;
-				// 	}
-				//
-				// 	ref readonly var physicalBody = ref body.Read<PhysicalBody>()!;
-				// 	collider.WorldPosition = physicalBody.WorldCoM + (physicalBody.Rotation.Counterclockwise * (physicalBody.OriginOffset + collider.Offset));
-				// });
 			}
 
 			private struct SingleColliderBodies : W.IQuery.Write<Collider>.Read<PhysicalBody, Bounds> {

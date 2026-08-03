@@ -7,10 +7,12 @@ namespace Game {
 	public abstract partial class Core<TWorld> {
 		public class ShipControlSystem : ISystem {
 			private readonly FP _maxThrust;
+			private readonly FP _maxBrake;
 			private readonly FAngle _maxTurn;
 
-			public ShipControlSystem(FP maxThrust, FAngle maxTurn) {
+			public ShipControlSystem(FP maxThrust, FP maxBrake, FAngle maxTurn) {
 				_maxThrust = maxThrust;
+				_maxBrake = maxBrake;
 				_maxTurn = maxTurn;
 			}
 

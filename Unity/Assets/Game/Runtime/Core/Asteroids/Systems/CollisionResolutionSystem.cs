@@ -1,17 +1,15 @@
-﻿using FFS.Libraries.StaticEcs;
+﻿using System.Runtime.CompilerServices;
+using FFS.Libraries.StaticEcs;
 using Fixed;
 using Fixed32;
 using Game.Core;
 using Collider = Game.Core.Collider;
 using Const = Game.Core.Const;
-using ContactPair = Game.Core.ContactPair;
 
 namespace Game {
 	public abstract partial class Core<TWorld> {
 		public class CollisionResolutionSystem : ISystem {
 			public void Update() {
-				W.Query().BatchDelete<W.Multi<ContactPair>>();
-
 				var broadPhase = W.GetResource<BroadPhase>();
 
 				var pairs = broadPhase.CollectPairs();
@@ -28,16 +26,11 @@ namespace Game {
 
 					if (distSqr < (radiusSum * radiusSum).To64()) {
 						Resolve(entityA, entityB, colliderA, colliderB, delta, distSqr.To32());
-						AddContact(entityA, entityB);
 					}
 				}
 			}
 
-			private static void AddContact(W.Entity a, W.Entity b) {
-				a.Add<W.Multi<ContactPair>>().Add(new ContactPair(b.GID));
-				b.Add<W.Multi<ContactPair>>().Add(new ContactPair(a.GID));
-			}
-
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private static void Resolve(W.Entity entityA, W.Entity entityB, in Collider colA, in Collider colB, FVector2 delta, FP distSqr) {
 				var dist = FP.Sqrt(distSqr);
 				var normal = dist > FP.Epsilon ? delta / dist : new FVector2(FP.One, FP.Zero);
@@ -91,6 +84,7 @@ namespace Game {
 				ApplyPositionalCorrection(ref bodyA, ref bodyB, normal, penetration);
 			}
 
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
 			private static void ApplyPositionalCorrection(ref PhysicalBody bodyA, ref PhysicalBody bodyB, FVector2 normal, FP penetration) {
 				var percent = FP.FromRatio(200, 1000); // 20%
 				var slop = FP.FromRatio(10, 1000);     // 0.01

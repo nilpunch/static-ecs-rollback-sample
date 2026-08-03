@@ -11,8 +11,8 @@ namespace Game {
 				W.SetResource(new PlayerMapping());
 
 				Systems.Add(new PlayerSpawnSystem());
-				Systems.Add(new ShipControlSystem(maxThrust: 10.ToFP(), maxTurn: FAngle.FromRadians(3.ToFP())));
-				Systems.Add(new ShipPhysicsSystem(turnStabilization: FAngle.FromRadians(2.ToFP())));
+				Systems.Add(new ShipControlSystem(maxThrust: 20.ToFP(), maxBrake: 5.ToFP(), maxTurn: FAngle.FromRadians(5.ToFP())));
+				Systems.Add(new ShipPhysicsSystem(turnStabilization: FAngle.FromRadians(2.ToFP()), thrusterOffset: FP.FromRatio(2, 1), momentOfInertia: FP.FromRatio(5, 10)));
 				Systems.Add(new MovementIntegrationSystem());
 				Systems.Add(new ColliderWorldPositionSyncSystem());
 				Systems.Add(new BroadPhaseSystem());

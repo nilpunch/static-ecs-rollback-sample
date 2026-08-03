@@ -173,7 +173,7 @@ namespace Game {
 					var nodeIndex = heads[cell];
 					while (nodeIndex != -1) {
 						var entity = nodes[nodeIndex].Entity;
-						ref var info = ref entity.Ref<BroadPhaseInfo>();
+						ref readonly var info = ref entity.Read<BroadPhaseInfo>()!;
 						scratch.Add((entity, info.LowerBound, info.UpperBound));
 						nodeIndex = nodes[nodeIndex].Next;
 					}
