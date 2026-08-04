@@ -1,9 +1,37 @@
 <Project>
-    <PropertyGroup>
-		<!-- Redirect all projects' build outputs -->
-        <ArtifactsPath>$(MSBuildThisFileDirectory)../Server/artifacts_unity</ArtifactsPath>
-        <BaseOutputPath>$(ArtifactsPath)/bin/$(MSBuildProjectName)/</BaseOutputPath>
-        <BaseIntermediateOutputPath>$(ArtifactsPath)/obj/$(MSBuildProjectName)/</BaseIntermediateOutputPath>
-        <OutputPath>$(BaseOutputPath)$(Configuration)/</OutputPath>
-    </PropertyGroup>
+	<!-- 1. PATH REDIRECTION (Modern Artifacts Layout) -->
+	<PropertyGroup>
+		<UseArtifactsOutput>true</UseArtifactsOutput>
+		<ArtifactsPath>$(MSBuildThisFileDirectory)../Server/artifacts_unity</ArtifactsPath>
+	</PropertyGroup>
+
+	<!-- 2. GLOBAL PUBLISH & CONFIGURATION DEFAULTS -->
+	<PropertyGroup>
+		<Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+		<TargetFramework Condition="'$(TargetFramework)' == ''">net10.0</TargetFramework>
+	</PropertyGroup>
+
+	<!-- 3. NATIVE AOT ISOLATION (Safe for modern targets) -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net10.0' Or '$(TargetFramework)' == 'net9.0' Or '$(TargetFramework)' == 'net8.0'">
+		<PublishAot>true</PublishAot>
+		<RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">osx-arm64</RuntimeIdentifier>
+
+		<!-- Keep this as the global default for your library projects -->
+		<NativeLib>Shared</NativeLib>
+	</PropertyGroup>
+
+	<!-- 4. MAC LINKER ARGUMENTS INTERCEPT -->
+	<ItemGroup Condition="'$(PublishAot)' == 'true' And $([MSBuild]::IsOSPlatform('OSX'))">
+		<!-- CRITICAL OPENSSL FIX: Points clang to Homebrew's library directory -->
+		<LinkerArg Include="-L/opt/homebrew/lib" />
+
+		<!-- Existing Swift SDK paths -->
+		<LinkerArg Include="-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib/swift" />
+		<LinkerArg Include="-L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx" />
+	</ItemGroup>
+
+	<!-- 5. LEGACY PROTECTION (Safely skips AOT for older targets) -->
+	<PropertyGroup Condition="'$(TargetFramework)' == 'net7.0' Or '$(TargetFramework)' == 'net6.0' Or '$(TargetFramework)' == 'netstandard2.1'">
+		<PublishAot>false</PublishAot>
+	</PropertyGroup>
 </Project>

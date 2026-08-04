@@ -17,3 +17,10 @@
 x64
 [Bb]in
 [Oo]bj
+
+# .NET Artifacts Layout Outputs
+artifacts/
+artifacts_unity/
+
+# macOS Native Symbol Directories
+*.dSYM/

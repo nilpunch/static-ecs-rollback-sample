@@ -1,6 +1,16 @@
 <Project>
-    <PropertyGroup>
-		<TargetFramework>.net10.0</TargetFramework>
-		<TargetFrameworks>.net10.0</TargetFrameworks>
+	<!-- MULTI-TARGET PASS: Configures the full target list for normal dotnet build routines -->
+	<PropertyGroup Condition="'$(TargetFramework)' == ''">
+		<TargetFrameworks>net10.0;net9.0;net8.0;net7.0;net6.0;netstandard2.1</TargetFrameworks>
+	</PropertyGroup>
+
+	<!-- SINGLE-TARGET PASS: Collapses multi-targeting array down for the publish inner-loop -->
+	<PropertyGroup Condition="'$(TargetFramework)' != ''">
+		<TargetFrameworks>$(TargetFramework)</TargetFrameworks>
+	</PropertyGroup>
+
+	<!-- CRITICAL FIX: Forces package generation off when Native AOT publish engine kicks in -->
+	<PropertyGroup Condition="'$(PublishAot)' == 'true'">
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	</PropertyGroup>
 </Project>
