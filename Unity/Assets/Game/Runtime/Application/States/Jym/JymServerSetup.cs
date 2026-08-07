@@ -18,6 +18,8 @@ namespace Game.Application {
 			GameWorldSetup.CreateAndInitialize();
 
 			SimulationSetup.PopulateAsteroids(numberOfAsteroids);
+
+			App.Get<AppLocalServer>().IsLocalServer = true;
 		}
 
 		public static void Destroy() {

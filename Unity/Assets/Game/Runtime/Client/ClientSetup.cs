@@ -7,7 +7,9 @@ namespace Game.Client {
 
 	public static class ClientSetup {
 		public static void CreateAndInitialize(ServerConnection connection, TickSyncConfig tickSyncConfig = default, double maxResimulationMillis = 0) {
-			CLNT.Create(GameSessionSetup.SessionConfig, connection, new GameWorldFullSyncHandler(),
+			CLNT.Create(GameSessionSetup.SessionConfig,
+				connection,
+				new GameWorldFullSyncHandler(),
 				tickSyncConfig: tickSyncConfig,
 				logger: new UnityLogger("Client"),
 				maxResimulationMillis: maxResimulationMillis);

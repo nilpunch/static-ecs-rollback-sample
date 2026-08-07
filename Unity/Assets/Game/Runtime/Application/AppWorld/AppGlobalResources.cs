@@ -7,6 +7,7 @@ namespace Game.Application {
 			ResourceConfigUtils.SetResourceConfigs<AppWorldType>();
 
 			App.Set(new AppServerConnection());
+			App.Set(new AppLocalServer());
 		}
 
 		public static void Dispose() {

@@ -5,8 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using static Game.Core<Game.Client.ClientWorldType>;
 
-namespace Game.Application
-{
+namespace Game.Application {
 	public class SessionInputUpdater : MonoBehaviour {
 		[SerializeField] private InputActionReference _moveInput;
 		[SerializeField] private float _radius = 4;
@@ -25,13 +24,13 @@ namespace Game.Application
 				return;
 			}
 
-			var move  = _moveInput.ToInputAction().ReadValue<Vector2>();
+			var move = _moveInput.ToInputAction().ReadValue<Vector2>();
 
 			var moveInput = new ShipInput {
-				Up    = move.y >  0.5f,
-				Down  = move.y < -0.5f,
-				Left  = move.x < -0.5f,
-				Right = move.x >  0.5f,
+				Up = move.y > 0.5f,
+				Down = move.y < -0.5f,
+				Left = move.x < -0.5f,
+				Right = move.x > 0.5f,
 			};
 
 			S.SetPredictionInput(CLNT.Channel, moveInput);

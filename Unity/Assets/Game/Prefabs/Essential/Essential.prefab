@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 2800718657430718595}
   - component: {fileID: 7854423320290990954}
   - component: {fileID: 7404739794367857751}
+  - component: {fileID: 8938087793628197635}
   m_Layer: 0
   m_Name: ClientUpdater
   m_TagString: Untagged
@@ -46,6 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 57adcaa123354cbfaa72c4fcf47b4d44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Client::Game.Client.ClientUpdater
+  _simulateLatency: 0
 --- !u!114 &7854423320290990954
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -73,6 +75,54 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dd4d96271f7425894ebdfed2e380013, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Application::Game.Application.ClientStabilityPlotter
+--- !u!114 &8938087793628197635
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 492810167361752601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8af9f5d958b54f8ca2e0248112bfbc00, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Application::Game.Application.ViewUpdater
+  _viewCulling: 1
+  _interpolate: 1
+  _virtualCameraPosition: {x: 0, y: 0}
+  _cameraSizeByVelocity:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 50
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 24
+      value: 50
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 136
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 500
+      value: 300
+      inSlope: 0.5252101
+      outSlope: 0.5252101
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &929743274656843978
 GameObject:
   m_ObjectHideFlags: 0

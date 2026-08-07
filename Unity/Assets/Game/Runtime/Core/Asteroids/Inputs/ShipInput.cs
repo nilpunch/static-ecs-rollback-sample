@@ -2,10 +2,10 @@ using Shenanicode.Rollback;
 
 namespace Game.Core {
 	public struct ShipInput : IInput {
-		private const byte LeftMask  = 1 << 0;
+		private const byte LeftMask = 1 << 0;
 		private const byte RightMask = 1 << 1;
-		private const byte UpMask    = 1 << 2;
-		private const byte DownMask  = 1 << 3;
+		private const byte UpMask = 1 << 2;
+		private const byte DownMask = 1 << 3;
 
 		public byte Arrows;
 

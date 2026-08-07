@@ -2,8 +2,7 @@
 using FFS.Libraries.StaticEcs;
 using Fixed32;
 
-namespace Game.Core
-{
+namespace Game.Core {
 	public struct Bounds : IComponent, ITrackableAdded, ITrackableChanged, IDisableable {
 		public FVector2 WorldPosition;
 		public FVector2 Extents;
