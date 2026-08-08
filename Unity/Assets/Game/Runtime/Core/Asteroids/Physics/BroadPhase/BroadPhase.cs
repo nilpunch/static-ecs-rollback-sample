@@ -184,8 +184,8 @@ namespace Game {
 						for (var j = i + 1; j < count; j++) {
 							var (entityB, loB, _) = scratch[j];
 
-							if (cellX != OverlapStart(loA.X, hiA.X, loB.X, WidthMask) ||
-								cellY != OverlapStart(loA.Y, hiA.Y, loB.Y, HeightMask)) {
+							if (cellX != OverlapStart(loA.X, hiA.X, loB.X, WidthMask)
+								|| cellY != OverlapStart(loA.Y, hiA.Y, loB.Y, HeightMask)) {
 								continue;
 							}
 
@@ -302,8 +302,7 @@ namespace Game {
 							if (node.Entity == entity) {
 								if (prevIndex == -1) {
 									Heads[cell] = node.Next;
-								}
-								else {
+								} else {
 									nodes[prevIndex].Next = node.Next;
 								}
 

@@ -20,8 +20,7 @@ namespace Game.Utils {
 		public TItem Get() {
 			if (_availableItems.Count > 0) {
 				return _availableItems.Pop();
-			}
-			else {
+			} else {
 				return _factory.Create();
 			}
 		}

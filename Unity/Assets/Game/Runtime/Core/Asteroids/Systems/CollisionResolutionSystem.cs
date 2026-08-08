@@ -17,6 +17,10 @@ namespace Game {
 				for (var i = 0; i < pairs.Count; i++) {
 					var (entityA, entityB) = pairs[i];
 
+					if (entityA.Has<Ship>() || entityB.Has<Ship>()) {
+						continue;
+					}
+
 					ref readonly var colliderA = ref entityA.Read<Collider>()!;
 					ref readonly var colliderB = ref entityB.Read<Collider>()!;
 
@@ -62,8 +66,8 @@ namespace Game {
 				var e = FP.FromRatio(500, 1000); // Restitution 0.5
 
 				// Simple mass/inertia: mass=1, inertia=radius^2/2
-				var invMassA = FP.One;
-				var invMassB = FP.One;
+				var invMassA = FP.One;// / bodyA.Mass;
+				var invMassB = FP.One;// / bodyB.Mass;
 				var invIA = FP.One / (colA.Radius * colA.Radius / 2);
 				var invIB = FP.One / (colB.Radius * colB.Radius / 2);
 

@@ -18,8 +18,7 @@ namespace Game.Client {
 			if (Entity.Has<Velocity>()) {
 				enabled = true;
 				TryUpdateVelocity();
-			}
-			else {
+			} else {
 				_entityView.PoseCorrectionSpeed = _maxSpeed;
 				enabled = false;
 			}

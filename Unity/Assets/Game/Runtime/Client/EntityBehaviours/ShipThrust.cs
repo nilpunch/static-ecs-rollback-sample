@@ -21,12 +21,10 @@ namespace Game.Client {
 			if (thrust > 0) {
 				thrustEmission.enabled = true;
 				brakeEmission.enabled = false;
-			}
-			else if (thrust < 0) {
+			} else if (thrust < 0) {
 				thrustEmission.enabled = false;
 				brakeEmission.enabled = true;
-			}
-			else {
+			} else {
 				thrustEmission.enabled = false;
 				brakeEmission.enabled = false;
 			}
@@ -34,12 +32,10 @@ namespace Game.Client {
 			if (turn > FAngle.Zero) {
 				rightEmission.enabled = true;
 				leftEmission.enabled = false;
-			}
-			else if (turn < FAngle.Zero) {
+			} else if (turn < FAngle.Zero) {
 				rightEmission.enabled = false;
 				leftEmission.enabled = true;
-			}
-			else {
+			} else {
 				rightEmission.enabled = false;
 				leftEmission.enabled = false;
 			}

@@ -30,8 +30,7 @@ namespace Game {
 
 						if (ship.Turn == FAngle.Zero) {
 							velocity.Angular = FAngle.MoveTowards(velocity.Angular, FAngle.Zero, config.TurnStabilization * Const.DeltaTime);
-						}
-						else {
+						} else {
 							var perpendicular = FVector2.Orthogonal(forward);
 							var force = perpendicular * ship.Turn.Radians;
 							var lever = forward * config.ThrusterOffset;

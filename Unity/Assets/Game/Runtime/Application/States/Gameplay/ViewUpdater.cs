@@ -35,8 +35,7 @@ namespace Game.Application {
 			if (_viewCulling) {
 				viewSynchronizer.SynchronizeFreeEntities();
 				viewSynchronizer.SynchronizeBroadPhaseEntities(_virtualCameraPosition.ToFP(), GetCameraExtents(Camera.main));
-			}
-			else {
+			} else {
 				viewSynchronizer.SynchronizeAllDebug();
 			}
 
@@ -79,8 +78,7 @@ namespace Game.Application {
 			var delta = current - prev;
 			if (delta > half) {
 				prev += size;
-			}
-			else if (delta < -half) {
+			} else if (delta < -half) {
 				prev -= size;
 			}
 

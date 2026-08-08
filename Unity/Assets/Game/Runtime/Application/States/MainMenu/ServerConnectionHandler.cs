@@ -42,8 +42,7 @@ namespace Game.Application {
 
 			if (serverConnection.IsConnected) {
 				App.Get<StateMachine>().Enter<Gameplay>();
-			}
-			else {
+			} else {
 				serverConnection.Close();
 				_address.SetEnabled(true);
 				_connect.SetEnabled(true);

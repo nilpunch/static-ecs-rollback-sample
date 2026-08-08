@@ -45,8 +45,7 @@ namespace Game.Application {
 					Radius = _radius.ToFP(),
 				};
 				S.SetPredictionInput(0, debugInput);
-			}
-			else {
+			} else {
 				S.SetPredictionInput(0, new DebugInput());
 			}
 		}

@@ -6,7 +6,7 @@ using Const = Game.Core.Const;
 
 namespace Game {
 	public abstract partial class Core<TWorld> {
-		public class ColliderWorldPositionSyncSystem : ISystem {
+		public class PhysicsPropertiesSyncSystem : ISystem {
 			public void Update() {
 				W.Query<None<W.Link<Body>>>()
 					.Write<Collider>()

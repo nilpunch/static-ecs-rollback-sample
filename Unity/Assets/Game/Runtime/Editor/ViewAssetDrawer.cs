@@ -71,13 +71,11 @@ namespace Game.Application.Editor {
 
 				if (newView == null) {
 					prop.managedReferenceValue = null;
-				}
-				else {
+				} else {
 					var newAsset = ViewDataBase.Instance.GetViewAsset(newView);
 					if (newAsset.IsValid) {
 						prop.managedReferenceValue = newAsset;
-					}
-					else {
+					} else {
 						Debug.LogWarning("Selected EntityView is not registered in View DB.");
 					}
 				}

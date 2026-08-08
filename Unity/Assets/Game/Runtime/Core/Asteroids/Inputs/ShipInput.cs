@@ -6,27 +6,28 @@ namespace Game.Core {
 		private const byte RightMask = 1 << 1;
 		private const byte UpMask = 1 << 2;
 		private const byte DownMask = 1 << 3;
+		private const byte ShootMask = 1 << 4;
 
-		public byte Arrows;
+		public byte Encoded;
 
 		public bool Left {
-			get => (Arrows & LeftMask) != 0;
-			set => Arrows = (byte)(value ? Arrows | LeftMask : Arrows & ~LeftMask);
+			get => (Encoded & LeftMask) != 0;
+			set => Encoded = (byte)(value ? Encoded | LeftMask : Encoded & ~LeftMask);
 		}
 
 		public bool Right {
-			get => (Arrows & RightMask) != 0;
-			set => Arrows = (byte)(value ? Arrows | RightMask : Arrows & ~RightMask);
+			get => (Encoded & RightMask) != 0;
+			set => Encoded = (byte)(value ? Encoded | RightMask : Encoded & ~RightMask);
 		}
 
 		public bool Up {
-			get => (Arrows & UpMask) != 0;
-			set => Arrows = (byte)(value ? Arrows | UpMask : Arrows & ~UpMask);
+			get => (Encoded & UpMask) != 0;
+			set => Encoded = (byte)(value ? Encoded | UpMask : Encoded & ~UpMask);
 		}
 
 		public bool Down {
-			get => (Arrows & DownMask) != 0;
-			set => Arrows = (byte)(value ? Arrows | DownMask : Arrows & ~DownMask);
+			get => (Encoded & DownMask) != 0;
+			set => Encoded = (byte)(value ? Encoded | DownMask : Encoded & ~DownMask);
 		}
 	}
 }

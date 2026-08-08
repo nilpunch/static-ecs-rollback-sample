@@ -116,8 +116,7 @@ namespace Game.Client {
 					ActiveViews[tracked.Index] = tracked.View;
 					Transforms[tracked.Index] = tracked.View.RootTransform;
 				}
-			}
-			else {
+			} else {
 				tracked.Asset = asset;
 				tracked.View = CreateView(asset, gid);
 				tracked.Index = ActiveViews.Count;
@@ -245,8 +244,7 @@ namespace Game.Client {
 					ref readonly var bodyPrev = ref entityPrev.Read<PhysicalBody>()!;
 					fromPos = Core.Const.Wrap(bodyPrev.WorldOrigin - CameraPosition).FromFP();
 					fromAngle = bodyPrev.Rotation.Radians.ToFloat();
-				}
-				else {
+				} else {
 					fromPos = toPos;
 					fromAngle = toAngle;
 				}
@@ -334,8 +332,7 @@ namespace Game.Client {
 				float half;
 				if (math.abs(angleDelta) <= maxAngleStep || maxAngleStep <= 0f) {
 					half = targetAngle * 0.5f;
-				}
-				else {
+				} else {
 					half = (currentAngle + math.sign(angleDelta) * maxAngleStep) * 0.5f;
 				}
 
@@ -359,8 +356,7 @@ namespace Game.Client {
 				var delta = math.fmod(to - from, 2f * math.PI);
 				if (delta > math.PI) {
 					delta -= 2f * math.PI;
-				}
-				else if (delta < -math.PI) {
+				} else if (delta < -math.PI) {
 					delta += 2f * math.PI;
 				}
 

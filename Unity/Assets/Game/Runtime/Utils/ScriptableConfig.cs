@@ -6,10 +6,10 @@ namespace Game.Utils {
 	public abstract class ScriptableConfig : ScriptableObject {
 		public static ScriptableConfig[] GetAll() {
 			return Resources.FindObjectsOfTypeAll<ScriptableConfig>()
-							#if UNITY_EDITOR
-							.Where(i => i.IsMainInstance)
-							#endif
-							.ToArray();
+				#if UNITY_EDITOR
+				.Where(i => i.IsMainInstance)
+				#endif
+				.ToArray();
 		}
 
 		#if UNITY_EDITOR
@@ -28,11 +28,11 @@ namespace Game.Utils {
 				}
 
 				_instance = Resources.FindObjectsOfTypeAll<T>()
-									.FirstOrDefault(
-										#if UNITY_EDITOR
-										i => i.IsMainInstance
-										#endif
-									);
+					.FirstOrDefault(
+						#if UNITY_EDITOR
+						i => i.IsMainInstance
+						#endif
+					);
 
 				if (_instance == null) {
 					Debug.LogError(typeof(T).Name + " could not be loaded.");
@@ -56,8 +56,7 @@ namespace Game.Utils {
 			var index = Array.FindIndex(preloads, p => p is T || p == null);
 			if (index >= 0) {
 				preloads[index] = this;
-			}
-			else {
+			} else {
 				Array.Resize(ref preloads, preloads.Length + 1);
 				preloads[^1] = this;
 			}
